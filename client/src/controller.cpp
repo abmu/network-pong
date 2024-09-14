@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
-Controller::Controller() : running(true) {}
+Controller::Controller() : running(true), ball{Vec2{}} {}
 
 bool Controller::init() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {

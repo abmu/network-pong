@@ -19,6 +19,7 @@ set(SOURCES
     src/main.cpp
     src/controller.cpp
     src/view.cpp
+    src/model.cpp
 )
 
 # Add executable

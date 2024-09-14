@@ -1,5 +1,6 @@
 #pragma once
 #include "view.h"
+#include "model.h"
 
 class Controller {
     public:
@@ -10,6 +11,7 @@ class Controller {
     
     private:
         View view;
+        Ball ball;
         bool running;
         void handle_events();
 };
