@@ -18,8 +18,17 @@ class Ball{
         SDL_Rect rect;
 };
 
+class Paddle{
+    public:
+        Paddle(Vec2 position);
+        Vec2 position;
+        SDL_Rect rect;
+};
+
 class Model{
     public:
         Model();
         Ball ball;
+        Paddle paddle_one;
+        Paddle paddle_two;
 };

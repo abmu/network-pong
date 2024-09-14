@@ -29,9 +29,27 @@ Ball::Ball(Vec2 position) :
     }
 {}
 
+Paddle::Paddle(Vec2 position) :
+    position(position),
+    rect{
+        .x = static_cast<int>(position.x),
+        .y = static_cast<int>(position.y),
+        .w = Constants::PADDLE_WIDTH,
+        .h = Constants::PADDLE_HEIGHT
+    }
+{}
+
 Model::Model() :
     ball{Vec2{
         (Constants::SCREEN_WIDTH / 2.0f) - (Constants::BALL_WIDTH / 2.0f),
         (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::BALL_HEIGHT / 2.0f)
+    }},
+    paddle_one{Vec2{
+        50.0f - (Constants::PADDLE_WIDTH / 2.0f),
+        (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
+    }},
+    paddle_two{Vec2{
+        (Constants::SCREEN_WIDTH - 50.0f) - (Constants::PADDLE_WIDTH / 2.0f),
+        (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
     }}
 {}

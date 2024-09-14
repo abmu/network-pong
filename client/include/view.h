@@ -13,6 +13,17 @@ class BallView {
         SDL_Renderer* renderer;
 };
 
+class PaddleView {
+    public:
+        PaddleView(Paddle& paddle);
+        void init(SDL_Renderer* renderer);
+        void draw();
+    
+    private:
+        Paddle paddle;
+        SDL_Renderer* renderer;
+};
+
 class View {
     public:
         View(Model& model);
@@ -24,5 +35,7 @@ class View {
         SDL_Window* window;
         SDL_Renderer* renderer;
         BallView ball_view;
+        PaddleView paddle_one_view;
+        PaddleView paddle_two_view;
         void draw_net();
 };

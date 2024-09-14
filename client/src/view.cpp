@@ -13,7 +13,18 @@ void BallView::draw() {
     SDL_RenderFillRect(renderer, &ball.rect);
 }
 
-View::View(Model& model) : window(NULL), renderer(NULL), ball_view(model.ball) {}
+PaddleView::PaddleView(Paddle& paddle) : paddle(paddle), renderer(NULL) {}
+
+void PaddleView::init(SDL_Renderer* renderer) {
+    this->renderer = renderer;
+}
+
+void PaddleView::draw() {
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_RenderFillRect(renderer, &paddle.rect);
+}
+
+View::View(Model& model) : window(NULL), renderer(NULL), ball_view(model.ball), paddle_one_view(model.paddle_one), paddle_two_view(model.paddle_two) {}
 
 bool View::init() {
     window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -29,6 +40,8 @@ bool View::init() {
     }
 
     ball_view.init(renderer);
+    paddle_one_view.init(renderer);
+    paddle_two_view.init(renderer);
 
     return true;
 }
@@ -39,6 +52,8 @@ void View::render() {
 
     draw_net();
     ball_view.draw();
+    paddle_one_view.draw();
+    paddle_two_view.draw();
 
     SDL_RenderPresent(renderer);
 }
