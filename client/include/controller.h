@@ -10,8 +10,8 @@ class Controller {
         void close();
     
     private:
+        Model model;
         View view;
-        Ball ball;
         bool running;
         void handle_events();
 };

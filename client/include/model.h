@@ -14,8 +14,12 @@ class Vec2{
 class Ball{
     public:
         Ball(Vec2 position);
-
-    private:
         Vec2 position;
         SDL_Rect rect;
+};
+
+class Model{
+    public:
+        Model();
+        Ball ball;
 };

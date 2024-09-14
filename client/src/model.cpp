@@ -28,3 +28,10 @@ Ball::Ball(Vec2 position) :
         .h = Constants::BALL_HEIGHT
     }
 {}
+
+Model::Model() :
+    ball{Vec2{
+        (Constants::SCREEN_WIDTH / 2.0f) - (Constants::BALL_WIDTH / 2.0f),
+        (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::BALL_HEIGHT / 2.0f)
+    }}
+{}
