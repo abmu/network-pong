@@ -24,7 +24,19 @@ void View::render() {
     SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, 0xFF);
     SDL_RenderClear(renderer);
 
+    draw_net();
+
     SDL_RenderPresent(renderer);
+}
+
+void View::draw_net() {
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+    for (int y = 0; y < Constants::SCREEN_HEIGHT; y++) {
+        if (y % 5 != 0) {
+            SDL_RenderDrawPoint(renderer, Constants::SCREEN_WIDTH / 2, y);
+        }
+    }
 }
 
 void View::close() {
