@@ -31,4 +31,6 @@ class Model{
         Ball ball;
         Paddle paddle_one;
         Paddle paddle_two;
+        int score_one;
+        int score_two;
 };

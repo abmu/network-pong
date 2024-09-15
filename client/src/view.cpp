@@ -24,7 +24,9 @@ void PaddleView::draw() {
     SDL_RenderFillRect(renderer, &paddle.rect);
 }
 
-View::View(Model& model) : window(NULL), renderer(NULL), ball_view(model.ball), paddle_one_view(model.paddle_one), paddle_two_view(model.paddle_two) {}
+ScoreView::ScoreView(int* score) : score(score), font(NULL) {}
+
+View::View(Model& model) : window(NULL), renderer(NULL), font(NULL), ball_view(model.ball), paddle_one_view(model.paddle_one), paddle_two_view(model.paddle_two), score_one_view(NULL), score_two_view(NULL) {}
 
 bool View::init() {
     window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -36,6 +38,12 @@ bool View::init() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == NULL) {
         std::cout << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    font = TTF_OpenFont("assets/fonts/Inter-Black.ttf", 48);
+    if (font == NULL) {
+        std::cout << "Failed to load font! TTF_Error: " << TTF_GetError() << std::endl;
         return false;
     }
 
@@ -69,6 +77,8 @@ void View::draw_net() {
 }
 
 void View::close() {
+    TTF_CloseFont(font);
+    font = NULL;
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
     SDL_DestroyWindow(window);

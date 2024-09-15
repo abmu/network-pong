@@ -10,6 +10,11 @@ bool Controller::init() {
         return false;
     }
 
+    if (TTF_Init() == -1) {
+        std::cout << "SDL_ttf could not initialise! TTF_Error: " << TTF_GetError() << std::endl;
+        return false;
+    }
+
     return view.init();
 }
 
@@ -35,5 +40,6 @@ void Controller::handle_events() {
 
 void Controller::close() {
     view.close();
+    TTF_Quit();
     SDL_Quit();
 }

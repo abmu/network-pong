@@ -1,6 +1,7 @@
 #pragma once
 #include "model.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 class BallView {
     public:
@@ -24,6 +25,17 @@ class PaddleView {
         SDL_Renderer* renderer;
 };
 
+class ScoreView {
+    public:
+        ScoreView(int* score);
+        void init(TTF_Font* font);
+        void draw();
+
+    private:
+        int* score;
+        TTF_Font* font;
+};
+
 class View {
     public:
         View(Model& model);
@@ -34,8 +46,11 @@ class View {
     private:
         SDL_Window* window;
         SDL_Renderer* renderer;
+        TTF_Font* font;
         BallView ball_view;
         PaddleView paddle_one_view;
         PaddleView paddle_two_view;
+        ScoreView score_one_view;
+        ScoreView score_two_view;
         void draw_net();
 };
