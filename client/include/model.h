@@ -13,14 +13,14 @@ class Vec2{
 
 class Ball{
     public:
-        Ball(Vec2 position);
+        Ball(Vec2 const& position);
         Vec2 position;
         SDL_Rect rect;
 };
 
 class Paddle{
     public:
-        Paddle(Vec2 position);
+        Paddle(Vec2 const& position);
         Vec2 position;
         SDL_Rect rect;
 };

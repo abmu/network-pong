@@ -19,7 +19,7 @@ Vec2 Vec2::operator*(float rhs) {
     return Vec2(x * rhs, y * rhs);
 }
 
-Ball::Ball(Vec2 position) :
+Ball::Ball(Vec2 const& position) :
     position(position),
     rect{
         .x = static_cast<int>(position.x),
@@ -29,7 +29,7 @@ Ball::Ball(Vec2 position) :
     }
 {}
 
-Paddle::Paddle(Vec2 position) :
+Paddle::Paddle(Vec2 const& position) :
     position(position),
     rect{
         .x = static_cast<int>(position.x),
@@ -51,5 +51,7 @@ Model::Model() :
     paddle_two{Vec2{
         (Constants::SCREEN_WIDTH - 50.0f) - (Constants::PADDLE_WIDTH / 2.0f),
         (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
-    }}
+    }},
+    score_one(0),
+    score_two(0)
 {}

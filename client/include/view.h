@@ -5,40 +5,46 @@
 
 class BallView {
     public:
-        BallView(Ball& ball);
-        void init(SDL_Renderer* renderer);
+        BallView(Ball const& ball);
+        void init(SDL_Renderer* const renderer);
         void draw();
     
     private:
-        Ball ball;
+        Ball const ball;
         SDL_Renderer* renderer;
 };
 
 class PaddleView {
     public:
-        PaddleView(Paddle& paddle);
-        void init(SDL_Renderer* renderer);
+        PaddleView(Paddle const& paddle);
+        void init(SDL_Renderer* const renderer);
         void draw();
     
     private:
-        Paddle paddle;
+        Paddle const paddle;
         SDL_Renderer* renderer;
 };
 
 class ScoreView {
     public:
-        ScoreView(int* score);
-        void init(TTF_Font* font);
+        ScoreView(const int* const score, Vec2 const& position);
+        void init(SDL_Renderer* const renderer, TTF_Font* const font);
+        void update();
         void draw();
+        void cleanup();
 
     private:
-        int* score;
+        const int* const score;
+        Vec2 const position;
+        SDL_Rect score_rect;
+        SDL_Texture* score_texture;
+        SDL_Renderer* renderer;
         TTF_Font* font;
 };
 
 class View {
     public:
-        View(Model& model);
+        View(Model const& model);
         bool init();
         void render();
         void close();
