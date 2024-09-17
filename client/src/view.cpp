@@ -24,12 +24,12 @@ void PaddleView::draw() {
     SDL_RenderFillRect(renderer, &paddle.rect);
 }
 
-ScoreView::ScoreView(const int* const score, Vec2 const& position) :
+ScoreView::ScoreView(int const& score, Vec2 const& position) :
     score(score),
     position(position),
     score_rect{
-        .x = static_cast<int>(position.x),
-        .y = static_cast<int>(position.y),
+        .x = static_cast<int>(std::round(position.x)),
+        .y = static_cast<int>(std::round(position.y)),
         .w = 0,
         .h = 0
     },
@@ -49,7 +49,7 @@ void ScoreView::update() {
         cleanup();
     }
 
-    SDL_Surface* score_surface = TTF_RenderText_Solid(font, std::to_string(*score).c_str(), {0xFF, 0xFF, 0xFF, 0xFF});
+    SDL_Surface* score_surface = TTF_RenderText_Solid(font, std::to_string(score).c_str(), {0xFF, 0xFF, 0xFF, 0xFF});
     score_texture = SDL_CreateTextureFromSurface(renderer, score_surface);
     SDL_FreeSurface(score_surface);
 
@@ -75,12 +75,12 @@ View::View(Model const& model) :
     ball_view{model.ball},
     paddle_one_view{model.paddle_one},
     paddle_two_view{model.paddle_two},
-    score_one_view{&model.score_one, Vec2{
-        (Constants::SCREEN_WIDTH / 4.0f) - (Constants::FONT_SIZE / 2.0f),
+    score_one_view{model.score_one, Vec2{
+        (Constants::SCREEN_WIDTH / 4.0f) - (Constants::FONT_SIZE / 4.0f),
         20.0f
     }},
-    score_two_view{&model.score_two, Vec2{
-        (Constants::SCREEN_WIDTH * 3.0f / 4.0f) - (Constants::FONT_SIZE / 2.0f),
+    score_two_view{model.score_two, Vec2{
+        (Constants::SCREEN_WIDTH * 3.0f / 4.0f) - (Constants::FONT_SIZE / 4.0f),
         20.0f
     }}
 {}

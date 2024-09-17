@@ -10,7 +10,7 @@ class BallView {
         void draw();
     
     private:
-        Ball const ball;
+        Ball const& ball;
         SDL_Renderer* renderer;
 };
 
@@ -21,20 +21,20 @@ class PaddleView {
         void draw();
     
     private:
-        Paddle const paddle;
+        Paddle const& paddle;
         SDL_Renderer* renderer;
 };
 
 class ScoreView {
     public:
-        ScoreView(const int* const score, Vec2 const& position);
+        ScoreView(int const& score, Vec2 const& position);
         void init(SDL_Renderer* const renderer, TTF_Font* const font);
         void update();
         void draw();
         void cleanup();
 
     private:
-        const int* const score;
+        int const& score;
         Vec2 const position;
         SDL_Rect score_rect;
         SDL_Texture* score_texture;

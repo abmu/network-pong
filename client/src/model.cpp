@@ -1,5 +1,5 @@
 #include "model.h"
-#include "settings.h"
+#include <iostream>
 
 Vec2::Vec2() : x(0.0f), y(0.0f) {}
 
@@ -22,8 +22,8 @@ Vec2 Vec2::operator*(float rhs) {
 Ball::Ball(Vec2 const& position) :
     position(position),
     rect{
-        .x = static_cast<int>(position.x),
-        .y = static_cast<int>(position.y),
+        .x = static_cast<int>(std::round(position.x)),
+        .y = static_cast<int>(std::round(position.y)),
         .w = Constants::BALL_WIDTH,
         .h = Constants::BALL_HEIGHT
     }
@@ -31,13 +31,34 @@ Ball::Ball(Vec2 const& position) :
 
 Paddle::Paddle(Vec2 const& position) :
     position(position),
+    velocity{},
     rect{
-        .x = static_cast<int>(position.x),
-        .y = static_cast<int>(position.y),
+        .x = static_cast<int>(std::round(position.x)),
+        .y = static_cast<int>(std::round(position.y)),
         .w = Constants::PADDLE_WIDTH,
         .h = Constants::PADDLE_HEIGHT
     }
 {}
+
+void Paddle::update(float dt) {
+    position += velocity * dt;
+    if (position.y < 0) {
+        position.y = 0;
+    } else if (position.y > (Constants::SCREEN_HEIGHT - Constants::PADDLE_HEIGHT)) {
+        position.y = Constants::SCREEN_HEIGHT - Constants::PADDLE_HEIGHT;
+    }
+    rect.x = static_cast<int>(std::round(position.x));
+    rect.y = static_cast<int>(std::round(position.y));
+}
+
+void Paddle::move(Constants::Direction direction) {
+    this->direction = direction;
+    if (this->direction == Constants::Direction::UP) {
+        velocity.y = -Constants::PADDLE_SPEED;
+    } else if (this->direction == Constants::Direction::DOWN) {
+        velocity.y = Constants::PADDLE_SPEED;
+    }
+}
 
 Model::Model() :
     ball{Vec2{
@@ -55,3 +76,8 @@ Model::Model() :
     score_one(0),
     score_two(0)
 {}
+
+void Model::update(float dt) {
+    paddle_one.update(dt);
+    paddle_two.update(dt);
+}

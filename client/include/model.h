@@ -1,4 +1,5 @@
 #pragma once
+#include "settings.h"
 #include <SDL2/SDL.h>
 
 class Vec2{
@@ -23,6 +24,10 @@ class Paddle{
         Paddle(Vec2 const& position);
         Vec2 position;
         SDL_Rect rect;
+        Vec2 velocity;
+        Constants::Direction direction;
+        void move(Constants::Direction direction);
+        void update(float dt);
 };
 
 class Model{
@@ -33,4 +38,5 @@ class Model{
         Paddle paddle_two;
         int score_one;
         int score_two;
+        void update(float dt);
 };
