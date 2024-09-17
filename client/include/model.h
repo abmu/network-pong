@@ -27,6 +27,7 @@ class Paddle{
         Vec2 velocity;
         Constants::Direction direction;
         void move(Constants::Direction direction);
+        void stop(Constants::Direction direction);
         void update(float dt);
 };
 

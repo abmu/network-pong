@@ -31,13 +31,14 @@ Ball::Ball(Vec2 const& position) :
 
 Paddle::Paddle(Vec2 const& position) :
     position(position),
-    velocity{},
     rect{
         .x = static_cast<int>(std::round(position.x)),
         .y = static_cast<int>(std::round(position.y)),
         .w = Constants::PADDLE_WIDTH,
         .h = Constants::PADDLE_HEIGHT
-    }
+    },
+    velocity{},
+    direction(Constants::Direction::NONE)
 {}
 
 void Paddle::update(float dt) {
@@ -60,17 +61,24 @@ void Paddle::move(Constants::Direction direction) {
     }
 }
 
+void Paddle::stop(Constants::Direction direction) {
+    if (this->direction == direction) {
+        this->direction = Constants::Direction::NONE;
+        velocity.y = 0;
+    }
+}
+
 Model::Model() :
     ball{Vec2{
         (Constants::SCREEN_WIDTH / 2.0f) - (Constants::BALL_WIDTH / 2.0f),
         (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::BALL_HEIGHT / 2.0f)
     }},
     paddle_one{Vec2{
-        50.0f - (Constants::PADDLE_WIDTH / 2.0f),
+        Constants::MARGIN - (Constants::PADDLE_WIDTH / 2.0f),
         (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
     }},
     paddle_two{Vec2{
-        (Constants::SCREEN_WIDTH - 50.0f) - (Constants::PADDLE_WIDTH / 2.0f),
+        (Constants::SCREEN_WIDTH - Constants::MARGIN) - (Constants::PADDLE_WIDTH / 2.0f),
         (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
     }},
     score_one(0),
