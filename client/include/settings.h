@@ -7,6 +7,7 @@ namespace Constants {
     constexpr int SCREEN_HEIGHT = static_cast<int>(720 * SCALE);
     constexpr int BALL_WIDTH = static_cast<int>(15 * SCALE);
     constexpr int BALL_HEIGHT = static_cast<int>(15 * SCALE);
+    constexpr float BALL_SPEED = 1.0f * SCALE;
     constexpr int PADDLE_WIDTH = static_cast<int>(10 * SCALE);
     constexpr int PADDLE_HEIGHT = static_cast<int>(100 * SCALE);
     constexpr float PADDLE_SPEED = 0.75f * SCALE;

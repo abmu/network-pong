@@ -14,21 +14,27 @@ class Vec2{
 
 class Ball{
     public:
-        Ball(Vec2 const& position);
-        Vec2 position;
+        Ball(Vec2 const& position, Vec2 const& velocity);
         SDL_Rect rect;
+        void update(float dt);
+
+    private:
+        Vec2 position;
+        Vec2 velocity;
 };
 
 class Paddle{
     public:
         Paddle(Vec2 const& position);
-        Vec2 position;
         SDL_Rect rect;
-        Vec2 velocity;
-        Constants::Direction direction;
         void move(Constants::Direction direction);
         void stop(Constants::Direction direction);
         void update(float dt);
+
+    private:
+        Vec2 position;
+        Vec2 velocity;
+        Constants::Direction direction;
 };
 
 class Model{
