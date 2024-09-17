@@ -13,6 +13,10 @@ void BallView::draw() {
     SDL_RenderFillRect(renderer, &ball.rect);
 }
 
+void BallView::close() {
+    renderer = NULL;
+}
+
 PaddleView::PaddleView(Paddle const& paddle) : paddle(paddle), renderer(NULL) {}
 
 void PaddleView::init(SDL_Renderer* const renderer) {
@@ -22,6 +26,10 @@ void PaddleView::init(SDL_Renderer* const renderer) {
 void PaddleView::draw() {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderFillRect(renderer, &paddle.rect);
+}
+
+void PaddleView::close() {
+    renderer = NULL;
 }
 
 ScoreView::ScoreView(int const& score, Vec2 const& position) :
@@ -68,6 +76,12 @@ void ScoreView::cleanup() {
     score_texture = NULL;
 }
 
+void ScoreView::close() {
+    cleanup();
+    font = NULL;
+    renderer = NULL;
+}
+
 View::View(Model const& model) :
     window(NULL),
     renderer(NULL),
@@ -77,11 +91,11 @@ View::View(Model const& model) :
     paddle_two_view{model.paddle_two},
     score_one_view{model.score_one, Vec2{
         (Constants::SCREEN_WIDTH / 4.0f) - (Constants::FONT_SIZE / 4.0f),
-        20.0f
+        static_cast<float>(Constants::MARGIN)
     }},
     score_two_view{model.score_two, Vec2{
         (Constants::SCREEN_WIDTH * 3.0f / 4.0f) - (Constants::FONT_SIZE / 4.0f),
-        20.0f
+        static_cast<float>(Constants::MARGIN)
     }}
 {}
 
@@ -131,15 +145,19 @@ void View::draw_net() {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
     for (int y = 0; y < Constants::SCREEN_HEIGHT; y++) {
-        if (y % 5 != 0) {
+        if (y % (Constants::NET_SPACING * 2) < Constants::NET_SPACING) {
             SDL_RenderDrawPoint(renderer, Constants::SCREEN_WIDTH / 2, y);
         }
     }
 }
 
 void View::close() {
-    score_one_view.cleanup();
-    score_two_view.cleanup();
+    ball_view.close();
+    paddle_one_view.close();
+    paddle_two_view.close();
+    score_one_view.close();
+    score_two_view.close();
+
     TTF_CloseFont(font);
     font = NULL;
     SDL_DestroyRenderer(renderer);

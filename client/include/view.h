@@ -8,6 +8,7 @@ class BallView {
         BallView(Ball const& ball);
         void init(SDL_Renderer* const renderer);
         void draw();
+        void close();
     
     private:
         Ball const& ball;
@@ -19,6 +20,7 @@ class PaddleView {
         PaddleView(Paddle const& paddle);
         void init(SDL_Renderer* const renderer);
         void draw();
+        void close();
     
     private:
         Paddle const& paddle;
@@ -32,6 +34,7 @@ class ScoreView {
         void update();
         void draw();
         void cleanup();
+        void close();
 
     private:
         int const& score;

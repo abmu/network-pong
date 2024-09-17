@@ -17,4 +17,5 @@ class Controller {
         float dt;
         void handle_events();
         void handle_keydown(SDL_Event event);
+        void handle_keyup(SDL_Event event);
 };
