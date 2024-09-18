@@ -13,10 +13,12 @@ namespace Constants {
     constexpr float PADDLE_SPEED = 0.75f * SCALE;
     constexpr int FONT_SIZE = static_cast<int>(60 * SCALE);
     constexpr int NET_SPACING = static_cast<int>(20 * SCALE);
-
-    enum class Direction {
-        NONE,
-        UP,
-        DOWN
-    };
 }
+
+enum class Direction {
+    NONE,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+};

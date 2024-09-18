@@ -27,8 +27,39 @@ Ball::Ball(Vec2 const& position, Vec2 const& velocity) :
         .w = Constants::BALL_WIDTH,
         .h = Constants::BALL_HEIGHT
     },
-    velocity(velocity)
+    velocity(velocity),
+    direction(
+        velocity.x > 0 ? Direction::RIGHT :
+        velocity.x < 0 ? Direction::LEFT :
+        Direction::NONE
+    )
 {}
+
+void Ball::check_paddle(Paddle const& paddle) {
+    if (position.y + Constants::BALL_HEIGHT < paddle.position.y) {
+        return;
+    }
+
+    if (position.y > paddle.position.y + Constants::PADDLE_HEIGHT) {
+        return;
+    }
+
+    if (direction == Direction::RIGHT) {
+        float ball_right = position.x + Constants::BALL_WIDTH;
+        if (ball_right < paddle.position.x || ball_right > paddle.position.x + Constants::PADDLE_WIDTH) {
+            return;
+        } 
+    } else if (direction == Direction::LEFT) {
+        if (position.x > paddle.position.x + Constants::PADDLE_WIDTH || position.x < paddle.position.x) {
+            return;
+        }
+    } else {
+        return;
+    }
+
+    velocity.x *= -1;
+    direction = velocity.x > 0 ? Direction::RIGHT : Direction::LEFT;
+}
 
 void Ball::update(float dt) {
     position += velocity * dt;
@@ -45,7 +76,7 @@ Paddle::Paddle(Vec2 const& position) :
         .h = Constants::PADDLE_HEIGHT
     },
     velocity{},
-    direction(Constants::Direction::NONE)
+    direction(Direction::NONE)
 {}
 
 void Paddle::update(float dt) {
@@ -59,20 +90,20 @@ void Paddle::update(float dt) {
     rect.y = static_cast<int>(std::round(position.y));
 }
 
-void Paddle::move(Constants::Direction direction) {
+void Paddle::move(Direction direction) {
     this->direction = direction;
-    if (this->direction == Constants::Direction::UP) {
+    if (this->direction == Direction::UP) {
         velocity.y = -Constants::PADDLE_SPEED;
-    } else if (this->direction == Constants::Direction::DOWN) {
+    } else if (this->direction == Direction::DOWN) {
         velocity.y = Constants::PADDLE_SPEED;
-    } else {
+    } else if (this->direction == Direction::NONE){
         velocity.y = 0.0f;
     }
 }
 
-void Paddle::stop(Constants::Direction direction) {
+void Paddle::stop(Direction direction) {
     if (this->direction == direction) {
-        move(Constants::Direction::NONE);
+        move(Direction::NONE);
     }
 }
 
@@ -96,8 +127,17 @@ Model::Model() :
     score_two(0)
 {}
 
+void Model::check_ball() {
+    if (ball.direction == Direction::RIGHT) {
+        ball.check_paddle(paddle_two);
+    } else if (ball.direction == Direction::LEFT) {
+        ball.check_paddle(paddle_one);
+    }
+}
+
 void Model::update(float dt) {
-    ball.update(dt);
     paddle_one.update(dt);
     paddle_two.update(dt);
+    check_ball();
+    ball.update(dt);
 }

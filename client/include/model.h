@@ -12,29 +12,31 @@ class Vec2{
         float x, y;
 };
 
-class Ball{
-    public:
-        Ball(Vec2 const& position, Vec2 const& velocity);
-        SDL_Rect rect;
-        void update(float dt);
-
-    private:
-        Vec2 position;
-        Vec2 velocity;
-};
-
 class Paddle{
     public:
         Paddle(Vec2 const& position);
         SDL_Rect rect;
-        void move(Constants::Direction direction);
-        void stop(Constants::Direction direction);
+        Vec2 position;
+        void move(Direction direction);
+        void stop(Direction direction);
+        void update(float dt);
+
+    private:
+        Vec2 velocity;
+        Direction direction;
+};
+
+class Ball{
+    public:
+        Ball(Vec2 const& position, Vec2 const& velocity);
+        SDL_Rect rect;
+        Direction direction;
+        void check_paddle(Paddle const& paddle);
         void update(float dt);
 
     private:
         Vec2 position;
         Vec2 velocity;
-        Constants::Direction direction;
 };
 
 class Model{
@@ -46,4 +48,7 @@ class Model{
         int score_one;
         int score_two;
         void update(float dt);
+
+    private:
+        void check_ball();
 };
