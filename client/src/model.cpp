@@ -20,12 +20,13 @@ Vec2 Vec2::operator*(float rhs) {
 }
 
 Ball::Ball(Vec2 const& position, Vec2 const& velocity) :
+    start_position(position),
     position(position),
     rect{
         .x = static_cast<int>(std::round(position.x)),
         .y = static_cast<int>(std::round(position.y)),
-        .w = Constants::BALL_WIDTH,
-        .h = Constants::BALL_HEIGHT
+        .w = Constants::BALL_SIZE,
+        .h = Constants::BALL_SIZE
     },
     velocity(velocity),
     direction(
@@ -35,55 +36,81 @@ Ball::Ball(Vec2 const& position, Vec2 const& velocity) :
     )
 {}
 
+void Ball::update(float dt) {
+    position += velocity * dt;
+    float const ymax = Constants::SCREEN_HEIGHT - rect.h;
+    if (position.y > ymax) {
+        position.y = ymax - (position.y - ymax);
+        velocity.y *= -1;
+    } else if (position.y < 0) {
+        position.y = -position.y;
+        velocity.y *= -1;
+    }
+    rect.x = static_cast<int>(std::round(position.x));
+    rect.y = static_cast<int>(std::round(position.y));
+}
+
 void Ball::check_paddle(Paddle const& paddle) {
-    float ball_bottom = position.y + Constants::BALL_HEIGHT;
+    float const ball_bottom = position.y + rect.h;
     if (ball_bottom < paddle.position.y) {
         return;
     }
 
-    if (position.y > paddle.position.y + Constants::PADDLE_HEIGHT) {
+    if (position.y > paddle.position.y + paddle.rect.h) {
         return;
     }
 
     if (direction == Direction::RIGHT) {
-        float ball_right = position.x + Constants::BALL_WIDTH;
-        if (ball_right < paddle.position.x || ball_right > paddle.position.x + Constants::PADDLE_WIDTH) {
+        float const ball_right = position.x + rect.w;
+        if (ball_right < paddle.position.x || ball_right > paddle.position.x + paddle.rect.w) {
             return;
-        } 
+        }
     } else if (direction == Direction::LEFT) {
-        if (position.x > paddle.position.x + Constants::PADDLE_WIDTH || position.x < paddle.position.x) {
+        float const paddle_right = paddle.position.x + paddle.rect.w;
+        if (position.x > paddle_right || position.x < paddle.position.x) {
             return;
         }
     } else {
         return;
     }
 
-    float paddle_one_third = paddle.position.y + (Constants::PADDLE_HEIGHT / 3.0f); 
-    float paddle_two_third = paddle.position.y + (Constants::PADDLE_HEIGHT * 2.0f / 3.0f);
-    if (ball_bottom < paddle_one_third) {
-        handle_paddle_collide(CollisionType::PADDLE_TOP);
-    } else if (position.y > paddle_two_third) {
-        handle_paddle_collide(CollisionType::PADDLE_BOTTOM);
+    CollisionType collision;
+    if (ball_bottom < paddle.position.y + (paddle.rect.h / 3.0f)) {
+        collision = CollisionType::PADDLE_TOP;
+    } else if (position.y > paddle.position.y + (paddle.rect.h * 2.0f / 3.0f)) {
+        collision = CollisionType::PADDLE_BOTTOM;
     } else {
-        handle_paddle_collide(CollisionType::PADDLE_MIDDLE);
+        collision = CollisionType::PADDLE_MIDDLE;
     }
+
+    handle_paddle_collide(collision);
 }
 
 void Ball::handle_paddle_collide(CollisionType collision) {
-    velocity.x *= -1;
-    direction = velocity.x > 0 ? Direction::RIGHT : Direction::LEFT;
-
     if (collision == CollisionType::PADDLE_TOP) {
         velocity.y = -0.75f * Constants::BALL_SPEED;
     } else if (collision == CollisionType::PADDLE_BOTTOM) {
         velocity.y = 0.75f * Constants::BALL_SPEED;
     }
+    reverse_direction();
 }
 
-void Ball::update(float dt) {
-    position += velocity * dt;
-    rect.x = static_cast<int>(std::round(position.x));
-    rect.y = static_cast<int>(std::round(position.y));
+void Ball::reverse_direction() {
+    velocity.x *= -1;
+    direction = velocity.x > 0 ? Direction::RIGHT : Direction::LEFT;
+}
+
+bool Ball::scored() {
+    if (position.x < -rect.w || position.x > Constants::SCREEN_WIDTH) {
+        return true;
+    }
+    return false;
+}
+
+void Ball::reset_position() {
+    position.x = start_position.x;
+    position.y = start_position.y;
+    reverse_direction();
 }
 
 Paddle::Paddle(Vec2 const& position) :
@@ -102,8 +129,8 @@ void Paddle::update(float dt) {
     position += velocity * dt;
     if (position.y < 0) {
         position.y = 0;
-    } else if (position.y > (Constants::SCREEN_HEIGHT - Constants::PADDLE_HEIGHT)) {
-        position.y = Constants::SCREEN_HEIGHT - Constants::PADDLE_HEIGHT;
+    } else if (position.y > Constants::SCREEN_HEIGHT - rect.h) {
+        position.y = Constants::SCREEN_HEIGHT - rect.h;
     }
     rect.x = static_cast<int>(std::round(position.x));
     rect.y = static_cast<int>(std::round(position.y));
@@ -129,8 +156,8 @@ void Paddle::stop(Direction direction) {
 Model::Model() :
     ball{
         Vec2{
-            (Constants::SCREEN_WIDTH / 2.0f) - (Constants::BALL_WIDTH / 2.0f),
-            (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::BALL_HEIGHT / 2.0f)
+            (Constants::SCREEN_WIDTH / 2.0f) - (Constants::BALL_SIZE / 2.0f),
+            (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::BALL_SIZE / 2.0f)
         },
         Vec2{static_cast<float>(Constants::BALL_SPEED), 0.0f}
     },
@@ -147,6 +174,16 @@ Model::Model() :
 {}
 
 void Model::check_ball() {
+    if (ball.scored()) {
+        if (ball.direction == Direction::RIGHT) {
+            score_one++;
+        } else if (ball.direction == Direction::LEFT) {
+            score_two++;
+        }
+        ball.reset_position();
+        return;
+    }
+
     if (ball.direction == Direction::RIGHT) {
         ball.check_paddle(paddle_two);
     } else if (ball.direction == Direction::LEFT) {

@@ -38,12 +38,16 @@ class Ball{
         SDL_Rect rect;
         Direction direction;
         void check_paddle(Paddle const& paddle);
-        void handle_paddle_collide(CollisionType collision);
+        bool scored();
+        void reset_position();
         void update(float dt);
 
     private:
+        Vec2 const start_position;
         Vec2 position;
         Vec2 velocity;
+        void reverse_direction();
+        void handle_paddle_collide(CollisionType collision);
 };
 
 class Model{
