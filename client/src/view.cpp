@@ -71,6 +71,7 @@ void ScoreView::update() {
 void ScoreView::draw() {
     if (view_score != score) {
         update();
+        view_score = score;
     }
     SDL_RenderCopy(renderer, score_texture, NULL, &score_rect);
 }
