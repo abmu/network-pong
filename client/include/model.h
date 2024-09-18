@@ -26,12 +26,19 @@ class Paddle{
         Direction direction;
 };
 
+enum class CollisionType {
+    PADDLE_TOP,
+    PADDLE_MIDDLE,
+    PADDLE_BOTTOM
+};
+
 class Ball{
     public:
         Ball(Vec2 const& position, Vec2 const& velocity);
         SDL_Rect rect;
         Direction direction;
         void check_paddle(Paddle const& paddle);
+        void handle_paddle_collide(CollisionType collision);
         void update(float dt);
 
     private:

@@ -36,7 +36,8 @@ Ball::Ball(Vec2 const& position, Vec2 const& velocity) :
 {}
 
 void Ball::check_paddle(Paddle const& paddle) {
-    if (position.y + Constants::BALL_HEIGHT < paddle.position.y) {
+    float ball_bottom = position.y + Constants::BALL_HEIGHT;
+    if (ball_bottom < paddle.position.y) {
         return;
     }
 
@@ -57,8 +58,26 @@ void Ball::check_paddle(Paddle const& paddle) {
         return;
     }
 
+    float paddle_one_third = paddle.position.y + (Constants::PADDLE_HEIGHT / 3.0f); 
+    float paddle_two_third = paddle.position.y + (Constants::PADDLE_HEIGHT * 2.0f / 3.0f);
+    if (ball_bottom < paddle_one_third) {
+        handle_paddle_collide(CollisionType::PADDLE_TOP);
+    } else if (position.y > paddle_two_third) {
+        handle_paddle_collide(CollisionType::PADDLE_BOTTOM);
+    } else {
+        handle_paddle_collide(CollisionType::PADDLE_MIDDLE);
+    }
+}
+
+void Ball::handle_paddle_collide(CollisionType collision) {
     velocity.x *= -1;
     direction = velocity.x > 0 ? Direction::RIGHT : Direction::LEFT;
+
+    if (collision == CollisionType::PADDLE_TOP) {
+        velocity.y = -0.75f * Constants::BALL_SPEED;
+    } else if (collision == CollisionType::PADDLE_BOTTOM) {
+        velocity.y = 0.75f * Constants::BALL_SPEED;
+    }
 }
 
 void Ball::update(float dt) {
@@ -92,12 +111,12 @@ void Paddle::update(float dt) {
 
 void Paddle::move(Direction direction) {
     this->direction = direction;
-    if (this->direction == Direction::UP) {
+    if (this->direction == Direction::NONE){
+        velocity.y = 0.0f;
+    } else if (this->direction == Direction::UP) {
         velocity.y = -Constants::PADDLE_SPEED;
     } else if (this->direction == Direction::DOWN) {
         velocity.y = Constants::PADDLE_SPEED;
-    } else if (this->direction == Direction::NONE){
-        velocity.y = 0.0f;
     }
 }
 
