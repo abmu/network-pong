@@ -45,28 +45,43 @@ void Controller::handle_events() {
 }
 
 void Controller::handle_keydown(SDL_Event event) {
-    if (event.key.keysym.sym == SDLK_ESCAPE) {
-        running = false;
-    } else if (event.key.keysym.sym == SDLK_w) {
-        model.paddle_one.move(Direction::UP);
-    } else if (event.key.keysym.sym == SDLK_s) {
-        model.paddle_one.move(Direction::DOWN);
-    } else if (event.key.keysym.sym == SDLK_UP) {
-        model.paddle_two.move(Direction::UP);
-    } else if (event.key.keysym.sym == SDLK_DOWN) {
-        model.paddle_two.move(Direction::DOWN);
+    switch (event.key.keysym.sym) {
+        case SDLK_ESCAPE:
+            running = false;
+            break;
+        case SDLK_w:
+            model.paddle_one.move(Direction::UP);
+            break;
+        case SDLK_s:
+            model.paddle_one.move(Direction::DOWN);
+            break;
+        case SDLK_UP:
+            model.paddle_two.move(Direction::UP);
+            break;
+        case SDLK_DOWN:
+            model.paddle_two.move(Direction::DOWN);
+            break;
+        default:
+            break;
     }
 }
 
 void Controller::handle_keyup(SDL_Event event) {
-    if (event.key.keysym.sym == SDLK_w) {
-        model.paddle_one.stop(Direction::UP);
-    } else if (event.key.keysym.sym == SDLK_s) {
-        model.paddle_one.stop(Direction::DOWN);
-    } else if (event.key.keysym.sym == SDLK_UP) {
-        model.paddle_two.stop(Direction::UP);
-    } else if (event.key.keysym.sym == SDLK_DOWN) {
-        model.paddle_two.stop(Direction::DOWN);
+    switch (event.key.keysym.sym) {
+        case SDLK_w:
+            model.paddle_one.stop(Direction::UP);
+            break;
+        case SDLK_s:
+            model.paddle_one.stop(Direction::DOWN);
+            break;
+        case SDLK_UP:
+            model.paddle_two.stop(Direction::UP);
+            break;
+        case SDLK_DOWN:
+            model.paddle_two.stop(Direction::DOWN);
+            break;
+        default:
+            break;
     }
 }
 
