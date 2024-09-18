@@ -34,7 +34,7 @@ void PaddleView::close() {
 
 ScoreView::ScoreView(int const& score, Vec2 const& position) :
     score(score),
-    view_score(score),
+    view_score(-1),
     position(position),
     score_rect{
         .x = static_cast<int>(std::round(position.x)),
@@ -58,6 +58,7 @@ void ScoreView::update() {
         cleanup();
     }
 
+    view_score = score;
     SDL_Surface* score_surface = TTF_RenderText_Solid(font, std::to_string(score).c_str(), {0xFF, 0xFF, 0xFF, 0xFF});
     score_texture = SDL_CreateTextureFromSurface(renderer, score_surface);
     SDL_FreeSurface(score_surface);
@@ -71,7 +72,6 @@ void ScoreView::update() {
 void ScoreView::draw() {
     if (view_score != score) {
         update();
-        view_score = score;
     }
     SDL_RenderCopy(renderer, score_texture, NULL, &score_rect);
 }

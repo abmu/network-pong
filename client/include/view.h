@@ -31,9 +31,7 @@ class ScoreView {
     public:
         ScoreView(int const& score, Vec2 const& position);
         void init(SDL_Renderer* const renderer, TTF_Font* const font);
-        void update();
         void draw();
-        void cleanup();
         void close();
 
     private:
@@ -44,6 +42,8 @@ class ScoreView {
         SDL_Texture* score_texture;
         SDL_Renderer* renderer;
         TTF_Font* font;
+        void update();
+        void cleanup();
 };
 
 class View {
