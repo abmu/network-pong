@@ -88,9 +88,9 @@ void Ball::check_paddle(Paddle const& paddle) {
 
 void Ball::handle_paddle_collide(CollisionType collision) {
     if (collision == CollisionType::PADDLE_TOP) {
-        velocity.y = -0.75f * Constants::BALL_SPEED;
+        velocity.y = -Constants::BALL_SPEED;
     } else if (collision == CollisionType::PADDLE_BOTTOM) {
-        velocity.y = 0.75f * Constants::BALL_SPEED;
+        velocity.y = Constants::BALL_SPEED;
     }
     reverse_direction();
 }

@@ -34,6 +34,7 @@ void PaddleView::close() {
 
 ScoreView::ScoreView(int const& score, Vec2 const& position) :
     score(score),
+    view_score(score),
     position(position),
     score_rect{
         .x = static_cast<int>(std::round(position.x)),
@@ -68,6 +69,9 @@ void ScoreView::update() {
 }
 
 void ScoreView::draw() {
+    if (view_score != score) {
+        update();
+    }
     SDL_RenderCopy(renderer, score_texture, NULL, &score_rect);
 }
 

@@ -38,6 +38,7 @@ class ScoreView {
 
     private:
         int const& score;
+        int view_score;
         Vec2 const position;
         SDL_Rect score_rect;
         SDL_Texture* score_texture;
