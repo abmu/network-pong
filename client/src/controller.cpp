@@ -19,15 +19,18 @@ bool Controller::init() {
 }
 
 void Controller::run() {
+    model.start_pause(1000);
     while (running) {
-        auto start_time = std::chrono::high_resolution_clock::now();
+        auto start_time = std::chrono::steady_clock::now();
 
         handle_events();
         model.update(dt);
         view.render();
 
-        auto stop_time = std::chrono::high_resolution_clock::now();
+        auto stop_time = std::chrono::steady_clock::now();
         dt = std::chrono::duration<float, std::chrono::milliseconds::period>(stop_time - start_time).count();
+        // float fps = 1000.0f / dt;
+        // std::cout << "fps: " << fps << std::endl;
     }
 }
 

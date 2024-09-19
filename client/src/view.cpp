@@ -96,11 +96,11 @@ View::View(Model const& model) :
     paddle_two_view{model.paddle_two},
     score_one_view{model.score_one, Vec2{
         (Constants::SCREEN_WIDTH / 4.0f) - (Constants::FONT_SIZE / 4.0f),
-        static_cast<float>(Constants::MARGIN)
+        Constants::MARGIN
     }},
     score_two_view{model.score_two, Vec2{
         (Constants::SCREEN_WIDTH * 3.0f / 4.0f) - (Constants::FONT_SIZE / 4.0f),
-        static_cast<float>(Constants::MARGIN)
+        Constants::MARGIN
     }}
 {}
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "settings.h"
 #include <SDL2/SDL.h>
+#include <chrono>
 
 class Vec2{
     public:        
@@ -58,8 +59,12 @@ class Model{
         Paddle paddle_two;
         int score_one;
         int score_two;
+        void start_pause(int duration);
         void update(float dt);
 
     private:
+        bool paused;
+        std::chrono::steady_clock::time_point pause_end_time;
         void check_ball();
+        void check_pause();
 };

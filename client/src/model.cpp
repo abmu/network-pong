@@ -91,6 +91,8 @@ void Ball::handle_paddle_collide(CollisionType collision) {
         velocity.y = -Constants::BALL_SPEED;
     } else if (collision == CollisionType::PADDLE_BOTTOM) {
         velocity.y = Constants::BALL_SPEED;
+    } else {
+        velocity.y /= 1.5f;
     }
     reverse_direction();
 }
@@ -159,7 +161,7 @@ Model::Model() :
             (Constants::SCREEN_WIDTH / 2.0f) - (Constants::BALL_SIZE / 2.0f),
             (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::BALL_SIZE / 2.0f)
         },
-        Vec2{static_cast<float>(Constants::BALL_SPEED), 0.0f}
+        Vec2{Constants::BALL_SPEED, 0.0f}
     },
     paddle_one{Vec2{
         Constants::MARGIN - (Constants::PADDLE_WIDTH / 2.0f),
@@ -170,8 +172,21 @@ Model::Model() :
         (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
     }},
     score_one(0),
-    score_two(0)
+    score_two(0),
+    paused(false),
+    pause_end_time(std::chrono::steady_clock::now())
 {}
+
+void Model::start_pause(int const duration) {
+    paused = true;
+    pause_end_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(duration);
+}
+
+void Model::check_pause() {
+    if (std::chrono::steady_clock::now() > pause_end_time) {
+        paused = false;
+    }
+}
 
 void Model::check_ball() {
     if (ball.scored()) {
@@ -181,6 +196,7 @@ void Model::check_ball() {
             score_two++;
         }
         ball.reset_position();
+        start_pause(1000);
         return;
     }
 
@@ -194,6 +210,10 @@ void Model::check_ball() {
 void Model::update(float dt) {
     paddle_one.update(dt);
     paddle_two.update(dt);
+    if (paused) {
+        check_pause();
+        return;
+    }
     check_ball();
     ball.update(dt);
 }
