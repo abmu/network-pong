@@ -31,6 +31,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES})
 
 # Copy assets to build directory
-set(ASSETS_DIR ${CMAKE_SOURCE_DIR}/assets)
-file(COPY ${ASSETS_DIR} DESTINATION ${CMAKE_BINARY_DIR})
-add_compile_definitions(ASSETS_DIR="${ASSETS_DIR}")
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
