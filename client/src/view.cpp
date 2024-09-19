@@ -117,7 +117,7 @@ bool View::init() {
         return false;
     }
 
-    font = TTF_OpenFont("assets/fonts/bit5x3.ttf", Constants::FONT_SIZE);
+    font = TTF_OpenFont(ASSETS_DIR "/fonts/bit5x3.ttf", Constants::FONT_SIZE);
     if (font == NULL) {
         std::cout << "Failed to load font! TTF_Error: " << TTF_GetError() << std::endl;
         return false;
