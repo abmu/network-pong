@@ -1,6 +1,9 @@
 #include "view.h"
 #include "settings.h"
 #include <iostream>
+#include <cmath>
+#include <string>
+
 
 BallView::BallView(Ball const& ball) : ball(ball), renderer(NULL) {}
 
