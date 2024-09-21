@@ -20,6 +20,7 @@ add_executable(
     src/controller.cpp
     src/view.cpp
     src/model.cpp
+    src/network.cpp
 )
 
 # Include directories
