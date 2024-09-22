@@ -4,7 +4,7 @@
 
 int main(int argc, char* args[]) {
     Network network;
-    network.init("127.0.0.1", 10224);
+    network.init("127.0.0.1", 9999);
     network.send_data("hello");
     std::cout << network.recv_data() << std::endl;
     network.close_sock();
