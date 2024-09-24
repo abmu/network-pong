@@ -3,15 +3,20 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 type Game struct {
-	clients []*net.UDPAddr
+	conn     *net.UDPConn
+	clients  []*net.UDPAddr
+	tickRate int
 }
 
-func newGame() *Game {
+func newGame(conn *net.UDPConn) *Game {
 	return &Game{
-		clients: make([]*net.UDPAddr, 0, 2),
+		conn:     conn,
+		clients:  make([]*net.UDPAddr, 0, 2),
+		tickRate: 64,
 	}
 }
 
@@ -35,9 +40,24 @@ func (g *Game) addClient(addr *net.UDPAddr) bool {
 	}
 
 	g.clients = append(g.clients, addr)
+	if len(g.clients) == 2 {
+		go g.start()
+	}
 	return true
 }
 
 func (g *Game) processMsg(addr *net.UDPAddr, msg string) {
 	fmt.Println(msg)
+}
+
+func (g *Game) start() {
+	tickInterval := time.Duration(1000/g.tickRate) * time.Millisecond
+	ticker := time.NewTicker(tickInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		for _, client := range g.clients {
+			g.conn.WriteToUDP([]byte("Hello"), client)
+		}
+	}
 }

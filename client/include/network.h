@@ -6,7 +6,8 @@
 class Network{
     public:
         Network();
-        bool init(std::string const& server_ip, int server_port);
+        int tick_rate;
+        bool init(std::string const& server_ip, int server_port, int tick_rate);
         bool send_data(std::string const& data);
         std::string recv_data();
         void close_sock();

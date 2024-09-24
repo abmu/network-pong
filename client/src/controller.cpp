@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono>
 
-Controller::Controller() : running(true), dt(0.0f), view(model) {}
+Controller::Controller() : running(true), view(model) {}
 
 bool Controller::init() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -15,12 +15,21 @@ bool Controller::init() {
         return false;
     }
 
-    return view.init();
+    return network.init("127.0.0.1", 9999, 64) && view.init();
 }
 
 void Controller::run() {
-    model.start_pause(1000);
+    network.send_data("hello");
+    float dt = 0.0f;
+    float const update_interval = 1000.0f / network.tick_rate;
+    float time_since_last_recv = 0.0f;
+    // model.start_pause(1000);
     while (running) {
+        if (time_since_last_recv >= update_interval) {
+            std::cout << network.recv_data() << std::endl;
+            time_since_last_recv = 0.0f;
+        }
+
         auto start_time = std::chrono::steady_clock::now();
 
         handle_events();
@@ -31,6 +40,8 @@ void Controller::run() {
         dt = std::chrono::duration<float, std::chrono::milliseconds::period>(stop_time - start_time).count();
         // float fps = 1000.0f / dt;
         // std::cout << "fps: " << fps << std::endl;
+
+        time_since_last_recv += dt;
     }
 }
 
@@ -90,6 +101,7 @@ void Controller::handle_keyup(SDL_Event event) {
 
 void Controller::close() {
     view.close();
+    network.close_sock();
     TTF_Quit();
     SDL_Quit();
 }

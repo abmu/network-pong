@@ -4,7 +4,7 @@
 
 Network::Network() : sock(-1), serv_addr{} {}
 
-bool Network::init(std::string const& serv_ip, int serv_port) {
+bool Network::init(std::string const& serv_ip, int serv_port, int tick_rate) {
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
         std::cout << "Could not create socket" << std::endl;
@@ -14,6 +14,8 @@ bool Network::init(std::string const& serv_ip, int serv_port) {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = inet_addr(serv_ip.c_str());
     serv_addr.sin_port = htons(serv_port);
+
+    this->tick_rate = tick_rate;
 
     return connect_serv();
 }

@@ -64,7 +64,7 @@ func (s *Server) assignGame(addr *net.UDPAddr) (*Game, bool) {
 	}
 
 	new = true
-	g := newGame()
+	g := newGame(s.conn)
 	g.addClient(addr)
 	s.games = append(s.games, g)
 	return g, new

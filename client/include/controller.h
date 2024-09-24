@@ -1,6 +1,7 @@
 #pragma once
-#include "view.h"
+#include "network.h"
 #include "model.h"
+#include "view.h"
 #include <SDL2/SDL.h>
 
 class Controller {
@@ -11,10 +12,10 @@ class Controller {
         void close();
     
     private:
+        Network network;
         Model model;
         View view;
         bool running;
-        float dt;
         void handle_events();
         void handle_keydown(SDL_Event event);
         void handle_keyup(SDL_Event event);

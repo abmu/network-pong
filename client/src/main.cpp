@@ -1,16 +1,9 @@
 #include "controller.h"
-#include "network.h"
 #include <iostream>
 
 int main(int argc, char* args[]) {
-    Network network;
-    network.init("127.0.0.1", 9999);
-    network.send_data("hello");
-    std::cout << network.recv_data() << std::endl;
-    network.close_sock();
-    return 0;
-
-
+    // allow user to input ip addr and port via command line args
+    // add movement interpolation
 
     Controller controller;
     if (!controller.init()) {
