@@ -15,19 +15,27 @@ bool Controller::init() {
         return false;
     }
 
-    return network.init("127.0.0.1", 9999, 64) && view.init();
+    return network.init("127.0.0.1", 9999) && view.init();
 }
 
 void Controller::run() {
-    network.send_data("hello");
     float dt = 0.0f;
-    float const update_interval = 1000.0f / network.tick_rate;
-    float time_since_last_recv = 0.0f;
+    float const tick_interval = 1000.0f / network.tick_rate;
+    float time_since_recv = 0.0f;
+    float const heartbeat_interval = network.heartbeat_sec * 1000.0f;
+    float time_since_heartbeat = 0.0f;
     // model.start_pause(1000);
     while (running) {
-        if (time_since_last_recv >= update_interval) {
-            std::cout << network.recv_data() << std::endl;
-            time_since_last_recv = 0.0f;
+        if (time_since_heartbeat >= heartbeat_interval) {
+            if (network.send_msg(Message::HEARTBEAT)) {
+                time_since_heartbeat = 0.0f;
+            }
+        }
+
+        if (time_since_recv >= tick_interval) {
+            if (network.recv_data()) {
+                time_since_recv = 0.0f;
+            }
         }
 
         auto start_time = std::chrono::steady_clock::now();
@@ -41,7 +49,8 @@ void Controller::run() {
         // float fps = 1000.0f / dt;
         // std::cout << "fps: " << fps << std::endl;
 
-        time_since_last_recv += dt;
+        time_since_recv += dt;
+        time_since_heartbeat += dt;
     }
 }
 

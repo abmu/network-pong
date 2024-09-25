@@ -50,7 +50,7 @@ func (s *Server) run() {
 		}
 
 		msg := buffer[:n]
-		g.processMsg(remoteAddr, string(msg))
+		g.processMsg(remoteAddr, msg)
 	}
 }
 
@@ -64,7 +64,7 @@ func (s *Server) assignGame(addr *net.UDPAddr) (*Game, bool) {
 	}
 
 	new = true
-	g := newGame(s.conn)
+	g := newGame(s)
 	g.addClient(addr)
 	s.games = append(s.games, g)
 	return g, new
@@ -77,4 +77,13 @@ func (s *Server) findGame(addr *net.UDPAddr) (*Game, bool) {
 		}
 	}
 	return nil, false
+}
+
+func (s *Server) removeGame(game *Game) {
+	for i, g := range s.games {
+		if g == game {
+			s.games = append(s.games[:i], s.games[i+1:]...)
+			break
+		}
+	}
 }
