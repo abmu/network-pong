@@ -20,37 +20,26 @@ bool Controller::init() {
 
 void Controller::run() {
     float dt = 0.0f;
-    float const tick_interval = 1000.0f / network.tick_rate;
-    float time_since_recv = 0.0f;
-    float const heartbeat_interval = network.heartbeat_sec * 1000.0f;
-    float time_since_heartbeat = 0.0f;
     // model.start_pause(1000);
+
     while (running) {
-        if (time_since_heartbeat >= heartbeat_interval) {
-            if (network.send_msg(Message::HEARTBEAT)) {
-                time_since_heartbeat = 0.0f;
-            }
-        }
-
-        if (time_since_recv >= tick_interval) {
-            if (network.recv_data()) {
-                time_since_recv = 0.0f;
-            }
-        }
-
         auto start_time = std::chrono::steady_clock::now();
 
+        bool timeout = network.read();
+        if (timeout) {
+            std::cout << "Connection timed out. Game ended or server down" << std::endl;
+            running = false;
+            break;
+        }
         handle_events();
         model.update(dt);
+        network.handle_heartbeat();
         view.render();
 
         auto stop_time = std::chrono::steady_clock::now();
         dt = std::chrono::duration<float, std::chrono::milliseconds::period>(stop_time - start_time).count();
         // float fps = 1000.0f / dt;
         // std::cout << "fps: " << fps << std::endl;
-
-        time_since_recv += dt;
-        time_since_heartbeat += dt;
     }
 }
 

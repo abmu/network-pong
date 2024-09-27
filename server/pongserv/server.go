@@ -3,12 +3,14 @@ package main
 import (
 	"log"
 	"net"
+	"sync"
 )
 
 type Server struct {
 	conn    *net.UDPConn
-	clients map[string]bool
+	clients map[string]*Game
 	games   []*Game
+	mutex   sync.Mutex
 }
 
 func newServer(address string) (*Server, error) {
@@ -24,7 +26,7 @@ func newServer(address string) (*Server, error) {
 
 	return &Server{
 		conn:    conn,
-		clients: make(map[string]bool),
+		clients: make(map[string]*Game),
 		games:   make([]*Game, 0),
 	}, nil
 }
@@ -39,51 +41,55 @@ func (s *Server) run() {
 			continue
 		}
 
-		addrStr := remoteAddr.String()
-		var g *Game
-		_, ok := s.clients[addrStr]
-		if !ok {
-			s.clients[addrStr] = true
-			g, _ = s.assignGame(remoteAddr)
-		} else {
-			g, _ = s.findGame(remoteAddr)
-		}
+		s.mutex.Lock()
 
 		msg := buffer[:n]
-		g.processMsg(remoteAddr, msg)
+		addrStr := remoteAddr.String()
+		g, ok := s.clients[addrStr]
+		if !ok {
+			msgType := uint8(msg[0])
+			if msgType == msgInit {
+				g = s.assignGame(remoteAddr)
+				s.clients[addrStr] = g
+			}
+		}
+
+		if g != nil {
+			g.processMsg(remoteAddr, msg)
+		}
+
+		s.mutex.Unlock()
 	}
 }
 
-func (s *Server) assignGame(addr *net.UDPAddr) (*Game, bool) {
-	new := false
+func (s *Server) assignGame(addr *net.UDPAddr) *Game {
 	for _, g := range s.games {
 		if g.canJoin() {
 			g.addClient(addr)
-			return g, new
+			return g
 		}
 	}
 
-	new = true
 	g := newGame(s)
 	g.addClient(addr)
 	s.games = append(s.games, g)
-	return g, new
-}
-
-func (s *Server) findGame(addr *net.UDPAddr) (*Game, bool) {
-	for _, g := range s.games {
-		if g.hasClient(addr) {
-			return g, true
-		}
-	}
-	return nil, false
+	go g.run()
+	return g
 }
 
 func (s *Server) removeGame(game *Game) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	for i, g := range s.games {
 		if g == game {
 			s.games = append(s.games[:i], s.games[i+1:]...)
 			break
 		}
+	}
+
+	for _, client := range game.clients {
+		addrStr := client.String()
+		delete(s.clients, addrStr)
 	}
 }
