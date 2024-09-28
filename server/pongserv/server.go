@@ -1,4 +1,4 @@
-package main
+package pongserv
 
 import (
 	"log"
@@ -8,12 +8,12 @@ import (
 
 type Server struct {
 	conn    *net.UDPConn
-	clients map[string]*Game
-	games   []*Game
+	clients map[string]*game
+	games   []*game
 	mutex   sync.Mutex
 }
 
-func newServer(address string) (*Server, error) {
+func NewServer(address string) (*Server, error) {
 	addr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
 		return nil, err
@@ -26,12 +26,12 @@ func newServer(address string) (*Server, error) {
 
 	return &Server{
 		conn:    conn,
-		clients: make(map[string]*Game),
-		games:   make([]*Game, 0),
+		clients: make(map[string]*game),
+		games:   make([]*game, 0),
 	}, nil
 }
 
-func (s *Server) run() {
+func (s *Server) Run() {
 	defer s.conn.Close()
 	buffer := make([]byte, 1024)
 	for {
@@ -43,11 +43,11 @@ func (s *Server) run() {
 
 		s.mutex.Lock()
 
-		msg := buffer[:n]
+		msgBuff := buffer[:n]
 		addrStr := remoteAddr.String()
 		g, ok := s.clients[addrStr]
 		if !ok {
-			msgType := uint8(msg[0])
+			msgType := msg(msgBuff[0])
 			if msgType == msgInit {
 				g = s.assignGame(remoteAddr)
 				s.clients[addrStr] = g
@@ -55,14 +55,14 @@ func (s *Server) run() {
 		}
 
 		if g != nil {
-			g.processMsg(remoteAddr, msg)
+			g.processMsg(remoteAddr, msgBuff)
 		}
 
 		s.mutex.Unlock()
 	}
 }
 
-func (s *Server) assignGame(addr *net.UDPAddr) *Game {
+func (s *Server) assignGame(addr *net.UDPAddr) *game {
 	for _, g := range s.games {
 		if g.canJoin() {
 			g.addClient(addr)
@@ -77,7 +77,7 @@ func (s *Server) assignGame(addr *net.UDPAddr) *Game {
 	return g
 }
 
-func (s *Server) removeGame(game *Game) {
+func (s *Server) removeGame(game *game) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 

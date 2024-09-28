@@ -1,4 +1,4 @@
-package main
+package pongserv
 
 import (
 	"encoding/binary"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type Game struct {
+type game struct {
 	s          *Server
 	clients    []*net.UDPAddr
 	lastActive map[string]time.Time
@@ -19,15 +19,17 @@ type Game struct {
 	mutex      sync.Mutex
 }
 
+type msg byte
+
 const (
-	msgInit uint8 = iota + 1
+	msgInit msg = iota + 1
 	msgInitack
 	msgHeartbeat
 	msgPaddleDir
 )
 
-func newGame(s *Server) *Game {
-	return &Game{
+func newGame(s *Server) *game {
+	return &game{
 		s:          s,
 		clients:    make([]*net.UDPAddr, 0, 2),
 		lastActive: make(map[string]time.Time),
@@ -38,11 +40,11 @@ func newGame(s *Server) *Game {
 	}
 }
 
-func (g *Game) canJoin() bool {
+func (g *game) canJoin() bool {
 	return len(g.clients) < 2
 }
 
-func (g *Game) hasClient(addr *net.UDPAddr) bool {
+func (g *game) hasClient(addr *net.UDPAddr) bool {
 	addrStr := addr.String()
 	for _, client := range g.clients {
 		if client.String() == addrStr {
@@ -52,7 +54,7 @@ func (g *Game) hasClient(addr *net.UDPAddr) bool {
 	return false
 }
 
-func (g *Game) addClient(addr *net.UDPAddr) bool {
+func (g *game) addClient(addr *net.UDPAddr) bool {
 	if !g.canJoin() || g.hasClient(addr) {
 		return false
 	}
@@ -64,7 +66,7 @@ func (g *Game) addClient(addr *net.UDPAddr) bool {
 	return true
 }
 
-func (g *Game) sendInitack(addr *net.UDPAddr) {
+func (g *game) sendInitack(addr *net.UDPAddr) {
 	buffer := make([]byte, 4)
 	buffer[0] = byte(msgInitack)
 	binary.BigEndian.PutUint16(buffer[1:3], g.timeoutMs)
@@ -72,28 +74,28 @@ func (g *Game) sendInitack(addr *net.UDPAddr) {
 	g.s.conn.WriteToUDP(buffer, addr)
 }
 
-func (g *Game) sendHeartbeat(addr *net.UDPAddr) {
+func (g *game) sendHeartbeat(addr *net.UDPAddr) {
 	buffer := make([]byte, 1)
 	buffer[0] = byte(msgHeartbeat)
 	g.s.conn.WriteToUDP(buffer, addr)
 }
 
-func (g *Game) processMsg(addr *net.UDPAddr, msg []byte) {
+func (g *game) processMsg(addr *net.UDPAddr, msgBuff []byte) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
 	g.lastActive[addr.String()] = time.Now()
-	msgType := uint8(msg[0])
-	fmt.Printf("%v, %v, %v\n", addr, msgType, msg[0])
+	msgType := msg(msgBuff[0])
+	fmt.Printf("%v, %v, %v\n", addr, msgType, msgBuff[0])
 	if msgType == msgInit {
 		g.sendInitack(addr)
 	} else if msgType == msgPaddleDir {
-		dir := uint8(msg[1])
+		dir := uint8(msgBuff[1])
 		fmt.Printf("%v\n", dir)
 	}
 }
 
-func (g *Game) run() {
+func (g *game) run() {
 	tickInterval := time.Duration(1000/float32(g.tickRate)) * time.Millisecond
 	ticker := time.NewTicker(tickInterval)
 	defer ticker.Stop()
