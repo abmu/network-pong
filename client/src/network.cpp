@@ -4,9 +4,19 @@
 #include <sys/time.h>
 #include <sys/select.h>
 #include <fcntl.h>
-#include <cstdint>
 
-Network::Network() : sock(-1), serv_addr{}, serv_handshake(false), heartbeat_ms(-1), timeout_ms(-1), game_start(false), last_recv(std::chrono::steady_clock::now()), last_hearbeat(std::chrono::steady_clock::now()) {}
+Network::Network(Model const& model, Direction const& paddle_dir) :
+    model(model),
+    paddle_dir(paddle_dir),
+    sock(-1),
+    serv_addr{},
+    serv_handshake(false),
+    timeout_ms(-1),
+    send_rate(-1),
+    send_ms(-1),
+    last_recv(std::chrono::steady_clock::now()),
+    last_send(std::chrono::steady_clock::now())
+{}
 
 bool Network::init(std::string const& serv_ip, int serv_port) {
     sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -82,42 +92,47 @@ bool Network::handshake() {
 
 bool Network::send_init() {
     int buff_size = 1;
-    char buffer[buff_size] = {};
-    buffer[0] = static_cast<char>(Message::INIT);
+    std::byte buffer[buff_size] = {};
+    buffer[0] = static_cast<std::byte>(Message::INIT);
     return send_data(buffer, buff_size);
 }
 
 bool Network::send_heartbeat() {
     int buff_size = 1;
-    char buffer[buff_size] = {};
-    buffer[0] = static_cast<char>(Message::HEARTBEAT);
+    std::byte buffer[buff_size] = {};
+    buffer[0] = static_cast<std::byte>(Message::HEARTBEAT);
     return send_data(buffer, buff_size);
 }
 
-bool Network::send_data(char* buffer, int buff_size) {
+bool Network::send_paddle_dir() {
+    int buff_size = 2;
+    std::byte buffer[buff_size] = {};
+    buffer[0] = static_cast<std::byte>(Message::PADDLE_DIR);
+    buffer[1] = static_cast<std::byte>(paddle_dir);
+    return send_data(buffer, buff_size);
+}
+
+bool Network::send_data(std::byte* buffer, int buff_size) {
     if (send(sock, buffer, buff_size, 0) < 0) {
         std::cout << "Send failed" << std::endl;
         return false;
     }
+    last_send = std::chrono::steady_clock::now();
     return true;
 }
 
-void Network::parse_msg(char* buffer) {
+void Network::parse_msg(std::byte* buffer) {
     Message msg = static_cast<Message>(buffer[0]);
     if (msg == Message::INITACK) {
         serv_handshake = true;
-        heartbeat_ms = ntohs(*reinterpret_cast<uint16_t*>(&buffer[1]));
-        timeout_ms = ntohs(*reinterpret_cast<uint16_t*>(&buffer[3]));
-    } else if (msg == Message::HEARTBEAT) {
-    } else {
-        if (!game_start) {
-            game_start = true;
-        }
+        timeout_ms = ntohs(*reinterpret_cast<uint16_t*>(&buffer[1]));
+        send_rate = static_cast<uint8_t>(buffer[3]);
+        send_ms = 1000.0f / send_rate;
     }
 }
 
 bool Network::recv_data() {
-    char buffer[1024] = {};
+    std::byte buffer[1024] = {};
     if (recv(sock, buffer, 1024, 0) < 0) {
         return false;
     }
@@ -137,13 +152,11 @@ bool Network::read() {
     return false;
 }
 
-void Network::handle_heartbeat() {
+void Network::write() {
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    float time_since_heartbeat = std::chrono::duration<float, std::chrono::milliseconds::period>(now - last_hearbeat).count();
-    if (time_since_heartbeat >= heartbeat_ms) {
-        if (send_heartbeat()) {
-            last_hearbeat = now;
-        }
+    float time_since_send = std::chrono::duration<float, std::chrono::milliseconds::period>(now - last_send).count();
+    if (time_since_send >= send_ms) {
+        send_paddle_dir();
     }
 }
 

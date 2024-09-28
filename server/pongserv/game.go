@@ -9,31 +9,32 @@ import (
 )
 
 type Game struct {
-	s             *Server
-	clients       []*net.UDPAddr
-	lastActive    map[string]time.Time
-	heartbeatMsec uint16
-	timeoutMsec   uint16
-	tickRate      uint8
-	start         bool
-	mutex         sync.Mutex
+	s          *Server
+	clients    []*net.UDPAddr
+	lastActive map[string]time.Time
+	timeoutMs  uint16
+	tickRate   uint8
+	clientRate uint8
+	start      bool
+	mutex      sync.Mutex
 }
 
 const (
 	msgInit uint8 = iota + 1
 	msgInitack
 	msgHeartbeat
+	msgPaddleDir
 )
 
 func newGame(s *Server) *Game {
 	return &Game{
-		s:             s,
-		clients:       make([]*net.UDPAddr, 0, 2),
-		lastActive:    make(map[string]time.Time),
-		heartbeatMsec: 1000,
-		timeoutMsec:   3000,
-		tickRate:      64,
-		start:         false,
+		s:          s,
+		clients:    make([]*net.UDPAddr, 0, 2),
+		lastActive: make(map[string]time.Time),
+		timeoutMs:  3000,
+		tickRate:   64,
+		clientRate: 32,
+		start:      false,
 	}
 }
 
@@ -64,10 +65,10 @@ func (g *Game) addClient(addr *net.UDPAddr) bool {
 }
 
 func (g *Game) sendInitack(addr *net.UDPAddr) {
-	buffer := make([]byte, 5)
+	buffer := make([]byte, 4)
 	buffer[0] = byte(msgInitack)
-	binary.BigEndian.PutUint16(buffer[1:3], g.heartbeatMsec)
-	binary.BigEndian.PutUint16(buffer[3:5], g.timeoutMsec)
+	binary.BigEndian.PutUint16(buffer[1:3], g.timeoutMs)
+	buffer[3] = byte(g.clientRate)
 	g.s.conn.WriteToUDP(buffer, addr)
 }
 
@@ -86,7 +87,9 @@ func (g *Game) processMsg(addr *net.UDPAddr, msg []byte) {
 	fmt.Printf("%v, %v, %v\n", addr, msgType, msg[0])
 	if msgType == msgInit {
 		g.sendInitack(addr)
-	} else if msgType == msgHeartbeat {
+	} else if msgType == msgPaddleDir {
+		dir := uint8(msg[1])
+		fmt.Printf("%v\n", dir)
 	}
 }
 
@@ -94,7 +97,7 @@ func (g *Game) run() {
 	tickInterval := time.Duration(1000/float32(g.tickRate)) * time.Millisecond
 	ticker := time.NewTicker(tickInterval)
 	defer ticker.Stop()
-	timeoutInterval := time.Duration(g.timeoutMsec) * time.Millisecond
+	timeout := time.Duration(g.timeoutMs) * time.Millisecond
 	for range ticker.C {
 		now := time.Now()
 		for _, client := range g.clients {
@@ -105,7 +108,7 @@ func (g *Game) run() {
 				g.sendHeartbeat(client)
 			}
 			last, ok := g.lastActive[client.String()]
-			if ok && now.Sub(last) > timeoutInterval {
+			if ok && now.Sub(last) > timeout {
 				fmt.Printf("Client %v has timed out\n", client)
 				g.s.removeGame(g)
 				g.mutex.Unlock()

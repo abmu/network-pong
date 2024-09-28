@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono>
 
-Controller::Controller() : running(true), view(model) {}
+Controller::Controller() : running(true), paddle_dir(Direction::NONE), view(model), network(model, paddle_dir) {}
 
 bool Controller::init() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -15,13 +15,11 @@ bool Controller::init() {
         return false;
     }
 
-    return network.init("127.0.0.1", 9999) && view.init();
+    return view.init() && network.init("127.0.0.1", 9999);
 }
 
 void Controller::run() {
     float dt = 0.0f;
-    // model.start_pause(1000);
-
     while (running) {
         auto start_time = std::chrono::steady_clock::now();
 
@@ -33,7 +31,7 @@ void Controller::run() {
         }
         handle_events();
         model.update(dt);
-        network.handle_heartbeat();
+        network.write();
         view.render();
 
         auto stop_time = std::chrono::steady_clock::now();
@@ -57,43 +55,24 @@ void Controller::handle_events() {
 }
 
 void Controller::handle_keydown(SDL_Event event) {
-    switch (event.key.keysym.sym) {
-        case SDLK_ESCAPE:
-            running = false;
-            break;
-        case SDLK_w:
-            model.paddle_one.move(Direction::UP);
-            break;
-        case SDLK_s:
-            model.paddle_one.move(Direction::DOWN);
-            break;
-        case SDLK_UP:
-            model.paddle_two.move(Direction::UP);
-            break;
-        case SDLK_DOWN:
-            model.paddle_two.move(Direction::DOWN);
-            break;
-        default:
-            break;
+    if (event.key.keysym.sym == SDLK_ESCAPE) {
+        running = false;
+    } else if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP) {
+        paddle_dir = Direction::UP;
+    } else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN) {
+        paddle_dir = Direction::DOWN;
     }
 }
 
 void Controller::handle_keyup(SDL_Event event) {
-    switch (event.key.keysym.sym) {
-        case SDLK_w:
-            model.paddle_one.stop(Direction::UP);
-            break;
-        case SDLK_s:
-            model.paddle_one.stop(Direction::DOWN);
-            break;
-        case SDLK_UP:
-            model.paddle_two.stop(Direction::UP);
-            break;
-        case SDLK_DOWN:
-            model.paddle_two.stop(Direction::DOWN);
-            break;
-        default:
-            break;
+    if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP) {
+        if (paddle_dir == Direction::UP) {
+            paddle_dir = Direction::NONE;
+        }
+    } else if (event.key.keysym.sym == SDLK_s || event.key.keysym.sym == SDLK_DOWN) {
+        if (paddle_dir == Direction::DOWN) {
+            paddle_dir = Direction::NONE;
+        }
     }
 }
 
