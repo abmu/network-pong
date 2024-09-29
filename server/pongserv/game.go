@@ -10,6 +10,7 @@ import (
 
 type game struct {
 	s          *Server
+	m          *model
 	clients    []*net.UDPAddr
 	lastActive map[string]time.Time
 	timeoutMs  uint16
@@ -31,6 +32,7 @@ const (
 func newGame(s *Server) *game {
 	return &game{
 		s:          s,
+		m:          newModel(),
 		clients:    make([]*net.UDPAddr, 0, 2),
 		lastActive: make(map[string]time.Time),
 		timeoutMs:  3000,
