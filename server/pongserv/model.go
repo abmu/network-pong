@@ -6,9 +6,9 @@ const (
 	gWidth  int     = 400
 	gHeight int     = 300
 	margin  int     = 20
-	bSpeed  float32 = 0.6
+	bSpeed  float32 = 100
 	bSize   int     = 10
-	pSpeed  float32 = 0.6
+	pSpeed  float32 = 100
 	pWidth  int     = 10
 	pHeight int     = 50
 )
@@ -136,8 +136,8 @@ type model struct {
 	b        *ball
 	p1       *paddle
 	p2       *paddle
-	s1       int
-	s2       int
+	s1       uint16
+	s2       uint16
 	paused   bool
 	pauseEnd time.Time
 }

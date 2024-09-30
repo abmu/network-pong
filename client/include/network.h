@@ -11,7 +11,8 @@ enum class Message {
     INIT = 1,
     INITACK = 2,
     HEARTBEAT = 3,
-    PADDLE_DIR = 4
+    PADDLE_DIR = 4,
+    MODEL_UPDATE = 5
 };
 
 class Network{
@@ -29,10 +30,11 @@ class Network{
         sockaddr_in serv_addr;
         bool serv_handshake;
         int timeout_ms;
-        int send_rate;
         float send_ms;
         std::chrono::steady_clock::time_point last_recv;
         std::chrono::steady_clock::time_point last_send;
+        uint16_t seq_num;
+        uint16_t last_game_seq_num;
         bool set_sock_block(bool blocking);
         bool handshake();
         bool send_data(std::byte* buffer, int buff_size);
@@ -41,4 +43,7 @@ class Network{
         bool send_paddle_dir();
         bool recv_data();
         void parse_msg(std::byte* buffer);
+        void handle_initack(std::byte* buffer);
+        void handle_model_update(std::byte* buffer);
+        bool ascending_seq_num(uint16_t seq_1, uint16_t seq_2);
 };

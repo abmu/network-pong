@@ -55,7 +55,7 @@ func (s *Server) Run() {
 		}
 
 		if g != nil {
-			g.processMsg(remoteAddr, msgBuff)
+			g.parseMsg(remoteAddr, msgBuff)
 		}
 
 		s.mutex.Unlock()
@@ -89,7 +89,7 @@ func (s *Server) removeGame(game *game) {
 	}
 
 	for _, client := range game.clients {
-		addrStr := client.String()
+		addrStr := client.addr.String()
 		delete(s.clients, addrStr)
 	}
 }

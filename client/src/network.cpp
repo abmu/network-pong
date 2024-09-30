@@ -12,10 +12,11 @@ Network::Network(Model const& model, Direction const& paddle_dir) :
     serv_addr{},
     serv_handshake(false),
     timeout_ms(-1),
-    send_rate(-1),
     send_ms(-1),
     last_recv(std::chrono::steady_clock::now()),
-    last_send(std::chrono::steady_clock::now())
+    last_send(std::chrono::steady_clock::now()),
+    seq_num(0),
+    last_game_seq_num(0)
 {}
 
 bool Network::init(std::string const& serv_ip, int serv_port) {
@@ -90,6 +91,14 @@ bool Network::handshake() {
     return false;
 }
 
+void Network::write() {
+    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    float time_since_send = std::chrono::duration<float, std::chrono::milliseconds::period>(now - last_send).count();
+    if (time_since_send >= send_ms) {
+        send_paddle_dir();
+    }
+}
+
 bool Network::send_init() {
     int buff_size = 1;
     std::byte buffer[buff_size] = {};
@@ -105,10 +114,13 @@ bool Network::send_heartbeat() {
 }
 
 bool Network::send_paddle_dir() {
-    int buff_size = 2;
+    seq_num++;
+    int buff_size = 4;
     std::byte buffer[buff_size] = {};
     buffer[0] = static_cast<std::byte>(Message::PADDLE_DIR);
-    buffer[1] = static_cast<std::byte>(paddle_dir);
+    buffer[1] = static_cast<std::byte>((seq_num >> 8) & 0xFF);
+    buffer[2] = static_cast<std::byte>(seq_num & 0xFF);
+    buffer[3] = static_cast<std::byte>(paddle_dir);
     return send_data(buffer, buff_size);
 }
 
@@ -118,26 +130,6 @@ bool Network::send_data(std::byte* buffer, int buff_size) {
         return false;
     }
     last_send = std::chrono::steady_clock::now();
-    return true;
-}
-
-void Network::parse_msg(std::byte* buffer) {
-    Message msg = static_cast<Message>(buffer[0]);
-    if (msg == Message::INITACK) {
-        serv_handshake = true;
-        timeout_ms = ntohs(*reinterpret_cast<uint16_t*>(&buffer[1]));
-        send_rate = static_cast<uint8_t>(buffer[3]);
-        send_ms = 1000.0f / send_rate;
-    }
-}
-
-bool Network::recv_data() {
-    std::byte buffer[1024] = {};
-    if (recv(sock, buffer, 1024, 0) < 0) {
-        return false;
-    }
-    last_recv = std::chrono::steady_clock::now();
-    parse_msg(buffer);
     return true;
 }
 
@@ -152,13 +144,43 @@ bool Network::read() {
     return false;
 }
 
-void Network::write() {
-    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    float time_since_send = std::chrono::duration<float, std::chrono::milliseconds::period>(now - last_send).count();
-    if (time_since_send >= send_ms) {
-        send_paddle_dir();
+bool Network::recv_data() {
+    std::byte buffer[1024] = {};
+    if (recv(sock, buffer, 1024, 0) < 0) {
+        return false;
+    }
+    last_recv = std::chrono::steady_clock::now();
+    parse_msg(buffer);
+    return true;
+}
+
+void Network::parse_msg(std::byte* buffer) {
+    Message msg = static_cast<Message>(buffer[0]);
+    if (msg == Message::INITACK) {
+        handle_initack(buffer);
     }
 }
+
+void Network::handle_initack(std::byte* buffer) {
+    serv_handshake = true;
+    timeout_ms = ntohs(*reinterpret_cast<uint16_t*>(&buffer[1]));
+    int send_rate = static_cast<int>(buffer[3]);
+    send_ms = 1000.0f / send_rate;
+}
+
+void Network::handle_model_update(std::byte* buffer) {
+    uint16_t game_seq_num = ntohs(*reinterpret_cast<uint16_t*>(&buffer[1]));
+    if (!ascending_seq_num(last_game_seq_num, game_seq_num)) {
+        return;
+    }
+    last_game_seq_num = game_seq_num;
+}
+
+bool Network::ascending_seq_num(uint16_t seq_1, uint16_t seq_2) {
+	uint16_t max = ~0;
+	return (seq_1 - seq_2) % max > (seq_2 - seq_1) % max;
+}
+
 
 void Network::close_sock() {
     close(sock);
