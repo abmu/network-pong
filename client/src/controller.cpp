@@ -35,7 +35,7 @@ void Controller::run() {
         view.render();
 
         auto stop_time = std::chrono::steady_clock::now();
-        dt = std::chrono::duration<float, std::chrono::milliseconds::period>(stop_time - start_time).count();
+        dt = std::chrono::duration<float, std::chrono::seconds::period>(stop_time - start_time).count();
         // float fps = 1000.0f / dt;
         // std::cout << "fps: " << fps << std::endl;
     }

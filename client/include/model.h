@@ -7,26 +7,30 @@ class Vec2{
     public:        
         Vec2();
         Vec2(float x, float y);
+        Vec2 operator+(Vec2 const& rhs);
+        Vec2& operator+=(Vec2 const& rhs);
+        Vec2 operator*(float rhs);
         float x, y;
 };
 
 class Paddle{
     public:
-        Paddle(Vec2 const& position);
+        Paddle();
         SDL_Rect rect;
-        Vec2 position;
-        void update(float dt);
+        void update(float paddle_x, float paddle_y, float paddle_vel_x, float paddle_vel_y);
+        void move(float dt);
 
     private:
+        Vec2 position;
         Vec2 velocity;
-        Direction direction;
 };
 
 class Ball{
     public:
-        Ball(Vec2 const& position, Vec2 const& velocity);
+        Ball();
         SDL_Rect rect;
-        void update(float dt);
+        void update(float ball_x, float ball_y, float ball_vel_x, float ball_vel_y);
+        void move(float dt);
 
     private:
         Vec2 position;
@@ -36,10 +40,11 @@ class Ball{
 class Model{
     public:
         Model();
-        Ball ball;
         Paddle paddle_one;
         Paddle paddle_two;
+        Ball ball;
         int score_one;
         int score_two;
+        void update_scores(int score_one, int score_two);
         void update(float dt);
 };

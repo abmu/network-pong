@@ -4,8 +4,9 @@
 #include <sys/time.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <bit>
 
-Network::Network(Model const& model, Direction const& paddle_dir) :
+Network::Network(Model& model, Direction const& paddle_dir) :
     model(model),
     paddle_dir(paddle_dir),
     sock(-1),
@@ -158,6 +159,8 @@ void Network::parse_msg(std::byte* buffer) {
     Message msg = static_cast<Message>(buffer[0]);
     if (msg == Message::INITACK) {
         handle_initack(buffer);
+    } else if (msg == Message::MODEL_UPDATE) {
+        handle_model_update(buffer);
     }
 }
 
@@ -174,13 +177,36 @@ void Network::handle_model_update(std::byte* buffer) {
         return;
     }
     last_game_seq_num = game_seq_num;
+
+    float ball_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[3])));
+    float ball_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[7])));
+    float ball_vel_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[11])));
+    float ball_vel_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[15])));
+    model.ball.update(ball_x, ball_y, ball_vel_x, ball_vel_y);
+
+    float paddle_one_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[19])));
+    float paddle_one_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[23])));
+    float paddle_one_vel_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[27])));
+    float paddle_one_vel_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[31])));
+    model.paddle_one.update(paddle_one_x, paddle_one_y, paddle_one_vel_x, paddle_one_vel_y);
+
+    float paddle_two_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[35])));
+    float paddle_two_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[39])));
+    float paddle_two_vel_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[43])));
+    float paddle_two_vel_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[47])));
+    model.paddle_two.update(paddle_two_x, paddle_two_y, paddle_two_vel_x, paddle_two_vel_y);
+
+    uint16_t score_one = ntohs(*reinterpret_cast<uint16_t*>(&buffer[51]));
+    uint16_t score_two = ntohs(*reinterpret_cast<uint16_t*>(&buffer[53]));
+    model.update_scores(score_one, score_two);
 }
 
-bool Network::ascending_seq_num(uint16_t seq_1, uint16_t seq_2) {
-	uint16_t max = ~0;
-	return (seq_1 - seq_2) % max > (seq_2 - seq_1) % max;
+bool Network::ascending_seq_num(uint16_t seq_one, uint16_t seq_two) {
+	int n = 65536;
+    int a = ((static_cast<int>(seq_one) - static_cast<int>(seq_two)) % n + n) % n;
+    int b = ((static_cast<int>(seq_two) - static_cast<int>(seq_one)) % n + n) % n;
+	return a > b;
 }
-
 
 void Network::close_sock() {
     close(sock);

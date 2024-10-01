@@ -5,10 +5,10 @@ import "time"
 const (
 	gWidth  int     = 400
 	gHeight int     = 300
-	margin  int     = 20
-	bSpeed  float32 = 100
+	margin  int     = 30
+	bSpeed  float32 = 200
 	bSize   int     = 10
-	pSpeed  float32 = 100
+	pSpeed  float32 = 250
 	pWidth  int     = 10
 	pHeight int     = 50
 )
@@ -35,7 +35,7 @@ type ball struct {
 	dir
 }
 
-func (b *ball) update(dt float32) {
+func (b *ball) move(dt float32) {
 	b.pos.x += b.vel.x * dt
 	b.pos.y += b.vel.y * dt
 	ymax := float32(gHeight - b.size)
@@ -112,7 +112,7 @@ type paddle struct {
 	vel    vec2
 }
 
-func (p *paddle) update(dt float32) {
+func (p *paddle) move(dt float32) {
 	p.pos.y += p.vel.y * dt
 	p.pos.x += p.vel.x * dt
 	if p.pos.y < 0 {
@@ -122,7 +122,7 @@ func (p *paddle) update(dt float32) {
 	}
 }
 
-func (p *paddle) move(dir dir) {
+func (p *paddle) moveDir(dir dir) {
 	if dir == dirNone {
 		p.vel.y = 0
 	} else if dir == dirUp {
@@ -157,7 +157,7 @@ func newModel() *model {
 	}
 
 	p2StartPos := vec2{
-		x: float32(gWidth) - float32(margin) + float32(pWidth)/2,
+		x: float32(gWidth) - float32(margin) - float32(pWidth)/2,
 		y: float32(gHeight)/2 - float32(pHeight)/2,
 	}
 
@@ -183,14 +183,14 @@ func newModel() *model {
 }
 
 func (m *model) update(dt float32) {
-	m.p1.update(dt)
-	m.p2.update(dt)
+	m.p1.move(dt)
+	m.p2.move(dt)
 	if m.paused {
 		m.checkPause()
 		return
 	}
 	m.checkBall()
-	m.b.update(dt)
+	m.b.move(dt)
 }
 
 func (m *model) checkBall() {

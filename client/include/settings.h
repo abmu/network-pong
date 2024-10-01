@@ -1,17 +1,15 @@
 #pragma once
 
 namespace Constants {
-    inline constexpr float SCALE = 1.0f;
-    inline constexpr int MARGIN = static_cast<int>(45 * SCALE);
-    inline constexpr int SCREEN_WIDTH = static_cast<int>(960 * SCALE);
-    inline constexpr int SCREEN_HEIGHT = static_cast<int>(720 * SCALE);
+    inline constexpr float SCALE = 2.4f;
+    inline constexpr int SCREEN_WIDTH = static_cast<int>(400 * SCALE);
+    inline constexpr int SCREEN_HEIGHT = static_cast<int>(300 * SCALE);
+    inline constexpr int MARGIN = static_cast<int>(30 * SCALE);
     inline constexpr int BALL_SIZE = static_cast<int>(10 * SCALE);
-    inline constexpr float BALL_SPEED = 0.6f * SCALE;
     inline constexpr int PADDLE_WIDTH = static_cast<int>(10 * SCALE);
-    inline constexpr int PADDLE_HEIGHT = static_cast<int>(90 * SCALE);
-    inline constexpr float PADDLE_SPEED = 1.0f * SCALE;
-    inline constexpr int FONT_SIZE = static_cast<int>(60 * SCALE);
-    inline constexpr int NET_SPACING = static_cast<int>(20 * SCALE);
+    inline constexpr int PADDLE_HEIGHT = static_cast<int>(50 * SCALE);
+    inline constexpr int FONT_SIZE = static_cast<int>(20 * SCALE);
+    inline constexpr int NET_SPACING = static_cast<int>(10 * SCALE);
 }
 
 enum class Direction {

@@ -98,17 +98,23 @@ func (g *game) sendHeartbeat(addr *net.UDPAddr) {
 func (g *game) getModelUpdate() []byte {
 	g.seqNum++
 	m := g.m
-	buffer := make([]byte, 31)
+	buffer := make([]byte, 55)
 	buffer[0] = byte(msgModelUpdate)
 	binary.BigEndian.PutUint16(buffer[1:3], g.seqNum)
 	binary.BigEndian.PutUint32(buffer[3:7], math.Float32bits(m.b.pos.x))
 	binary.BigEndian.PutUint32(buffer[7:11], math.Float32bits(m.b.pos.y))
-	binary.BigEndian.PutUint32(buffer[11:15], math.Float32bits(m.p1.pos.x))
-	binary.BigEndian.PutUint32(buffer[15:19], math.Float32bits(m.p1.pos.y))
-	binary.BigEndian.PutUint32(buffer[19:23], math.Float32bits(m.p2.pos.x))
-	binary.BigEndian.PutUint32(buffer[23:27], math.Float32bits(m.p2.pos.y))
-	binary.BigEndian.PutUint16(buffer[27:29], m.s1)
-	binary.BigEndian.PutUint16(buffer[29:31], m.s2)
+	binary.BigEndian.PutUint32(buffer[11:15], math.Float32bits(m.b.vel.x))
+	binary.BigEndian.PutUint32(buffer[15:19], math.Float32bits(m.b.vel.y))
+	binary.BigEndian.PutUint32(buffer[19:23], math.Float32bits(m.p1.pos.x))
+	binary.BigEndian.PutUint32(buffer[23:27], math.Float32bits(m.p1.pos.y))
+	binary.BigEndian.PutUint32(buffer[27:31], math.Float32bits(m.p1.vel.x))
+	binary.BigEndian.PutUint32(buffer[31:35], math.Float32bits(m.p1.vel.y))
+	binary.BigEndian.PutUint32(buffer[35:39], math.Float32bits(m.p2.pos.x))
+	binary.BigEndian.PutUint32(buffer[39:43], math.Float32bits(m.p2.pos.y))
+	binary.BigEndian.PutUint32(buffer[43:47], math.Float32bits(m.p2.vel.x))
+	binary.BigEndian.PutUint32(buffer[47:51], math.Float32bits(m.p2.vel.y))
+	binary.BigEndian.PutUint16(buffer[51:53], m.s1)
+	binary.BigEndian.PutUint16(buffer[53:55], m.s2)
 	return buffer
 }
 
@@ -145,15 +151,17 @@ func (g *game) handlePaddleDir(client *client, buffer []byte) {
 	client.lastSeqNum = seqNum
 	dir := dir(buffer[3])
 	if g.clients[0] == client {
-		g.m.p1.move(dir)
+		g.m.p1.moveDir(dir)
 	} else if g.clients[1] == client {
-		g.m.p2.move(dir)
+		g.m.p2.moveDir(dir)
 	}
 }
 
 func (g *game) ascSeqNum(seq1 uint16, seq2 uint16) bool {
-	max := ^uint16(0)
-	return (seq1-seq2)%max > (seq2-seq1)%max
+	n := 65536
+	a := ((int(seq1)-int(seq2))%n + n) % n
+	b := ((int(seq2)-int(seq1))%n + n) % n
+	return a > b
 }
 
 func (g *game) run() {
@@ -169,7 +177,6 @@ func (g *game) run() {
 		if g.start {
 			g.m.update(dt)
 		}
-		fmt.Println(g.m.b.pos)
 		mUpdate := g.getModelUpdate()
 		for _, client := range g.clients {
 			g.mutex.Lock()

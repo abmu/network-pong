@@ -17,14 +17,14 @@ enum class Message {
 
 class Network{
     public:
-        Network(Model const& model, Direction const& paddle_dir);
+        Network(Model& model, Direction const& paddle_dir);
         bool init(std::string const& server_ip, int server_port);
         bool read();
         void write();
         void close_sock();
 
     private:
-        Model const& model;
+        Model& model;
         Direction const& paddle_dir;
         int sock;
         sockaddr_in serv_addr;

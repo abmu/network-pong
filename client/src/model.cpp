@@ -6,18 +6,40 @@ Vec2::Vec2() : x(0.0f), y(0.0f) {}
 
 Vec2::Vec2(float x, float y) : x(x), y(y) {}
 
-Ball::Ball(Vec2 const& position, Vec2 const& velocity) :
-    position(position),
+Vec2 Vec2::operator+(Vec2 const& rhs) {
+    return Vec2(x + rhs.x, y + rhs.y);
+}
+
+Vec2& Vec2::operator+=(Vec2 const& rhs) {
+    x += rhs.x;
+    y += rhs.y;
+    return *this;
+}
+
+Vec2 Vec2::operator*(float rhs) {
+    return Vec2(x * rhs, y * rhs);
+}
+
+Ball::Ball() :
     rect{
         .x = static_cast<int>(std::round(position.x)),
         .y = static_cast<int>(std::round(position.y)),
         .w = Constants::BALL_SIZE,
         .h = Constants::BALL_SIZE
-    },
-    velocity(velocity)
+    }
 {}
 
-void Ball::update(float dt) {
+void Ball::update(float ball_x, float ball_y, float ball_vel_x, float ball_vel_y) {
+    position.x = ball_x * Constants::SCALE;
+    position.y = ball_y * Constants::SCALE;
+    rect.x = static_cast<int>(std::round(position.x));
+    rect.y = static_cast<int>(std::round(position.y));
+    velocity.x = ball_vel_x * Constants::SCALE;
+    velocity.y = ball_vel_y * Constants::SCALE;
+}
+
+void Ball::move(float dt) {
+    position += velocity * dt;
     float const ymax = Constants::SCREEN_HEIGHT - rect.h;
     if (position.y > ymax) {
         position.y = ymax - (position.y - ymax);
@@ -30,19 +52,26 @@ void Ball::update(float dt) {
     rect.y = static_cast<int>(std::round(position.y));
 }
 
-Paddle::Paddle(Vec2 const& position) :
-    position(position),
+Paddle::Paddle() :
     rect{
         .x = static_cast<int>(std::round(position.x)),
         .y = static_cast<int>(std::round(position.y)),
         .w = Constants::PADDLE_WIDTH,
         .h = Constants::PADDLE_HEIGHT
-    },
-    velocity{},
-    direction(Direction::NONE)
+    }
 {}
 
-void Paddle::update(float dt) {
+void Paddle::update(float paddle_x, float paddle_y, float paddle_vel_x, float paddle_vel_y) {
+    position.x = paddle_x * Constants::SCALE;
+    position.y = paddle_y * Constants::SCALE;
+    rect.x = static_cast<int>(std::round(position.x));
+    rect.y = static_cast<int>(std::round(position.y));
+    velocity.x = paddle_vel_x * Constants::SCALE;
+    velocity.y = paddle_vel_y * Constants::SCALE;
+}
+
+void Paddle::move(float dt) {
+    position += velocity * dt;
     if (position.y < 0) {
         position.y = 0;
     } else if (position.y > Constants::SCREEN_HEIGHT - rect.h) {
@@ -53,27 +82,20 @@ void Paddle::update(float dt) {
 }
 
 Model::Model() :
-    ball{
-        Vec2{
-            (Constants::SCREEN_WIDTH / 2.0f) - (Constants::BALL_SIZE / 2.0f),
-            (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::BALL_SIZE / 2.0f)
-        },
-        Vec2{Constants::BALL_SPEED, 0.0f}
-    },
-    paddle_one{Vec2{
-        Constants::MARGIN - (Constants::PADDLE_WIDTH / 2.0f),
-        (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
-    }},
-    paddle_two{Vec2{
-        (Constants::SCREEN_WIDTH - Constants::MARGIN) - (Constants::PADDLE_WIDTH / 2.0f),
-        (Constants::SCREEN_HEIGHT / 2.0f) - (Constants::PADDLE_HEIGHT / 2.0f)
-    }},
+    ball{},
+    paddle_one{},
+    paddle_two{},
     score_one(0),
     score_two(0)
 {}
 
+void Model::update_scores(int score_one, int score_two) {
+    this->score_one = score_one;
+    this->score_two = score_two;
+}
+
 void Model::update(float dt) {
-    paddle_one.update(dt);
-    paddle_two.update(dt);
-    ball.update(dt);
+    paddle_one.move(dt);
+    paddle_two.move(dt);
+    ball.move(dt);
 }
