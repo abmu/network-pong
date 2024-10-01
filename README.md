@@ -18,9 +18,9 @@ go run main.go
 
 Before you begin, ensure that you have C++ and CMake installed, as well as the dependencies listed below.
 
-1. To run the client, first get a copy of the `client/` directory.
+1. To run the client, first get a copy of the `client/` directory. Within the `include/settings.h` file you can adjust the scale to make the client game window larger or smaller.
 
-2. Within it create a `build/` directory and change into it.
+2. Within your `client/` directory create a `build/` directory and change into it.
 
 ```bash
 mkdir build
