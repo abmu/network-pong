@@ -1,6 +1,6 @@
 # network-pong
 
-A network pong game with a GO server and a C++ client, communicating over UDP.
+A network pong game with a GO server and C++ clients, communicating over UDP.
 
 ## Server setup
 
@@ -18,7 +18,7 @@ go run main.go
 
 Before you begin, ensure that you have C++ and CMake installed, as well as the dependencies listed below.
 
-1. To run the client first get a copy of the `client/` directory.
+1. To run the client, first get a copy of the `client/` directory.
 
 2. Within it create a `build/` directory and change into it.
 
@@ -40,7 +40,7 @@ make
 ./pong <ip address> <port>
 ```
 
-Replace <ip address> and <port> with the ip address of the server and the port you are running it on. To connect to a server running on your local machine, for example:
+Replace `<ip address>` and `<port>` with the ip address of the server and the port you are running it on. To connect to a server running on your local machine on port 9999, for example, you would do the following:
 
 ```bash
 ./pong 127.0.0.1 9999
@@ -61,6 +61,6 @@ sudo apt-get install libsdl2-dev libsdl2-ttf-dev
 
 ## Notes
 
-Ensure that the server and client are running on machines that can communicate with each other over the specified IP address and port
+Ensure that the server and client are running on machines that can communicate with each other over the specified IP address and port using UDP.
 
 The server should always be started before the clients. A game will only start when two clients join, and ends when either client leaves (or the server is closed).
