@@ -4,7 +4,7 @@
 
 Controller::Controller() : running(true), paddle_dir(Direction::NONE), view(model), network(model, paddle_dir) {}
 
-bool Controller::init() {
+bool Controller::init(std::string const& serv_ip, int serv_port) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cout << "SDL could not initialise! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
@@ -15,7 +15,7 @@ bool Controller::init() {
         return false;
     }
 
-    return view.init() && network.init("127.0.0.1", 9999);
+    return view.init() && network.init(serv_ip, serv_port);
 }
 
 void Controller::run() {

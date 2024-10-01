@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <chrono>
 #include <cstddef>
+#include <cstdint>
 
 enum class Message {
     INIT = 1,
@@ -18,7 +19,7 @@ enum class Message {
 class Network{
     public:
         Network(Model& model, Direction const& paddle_dir);
-        bool init(std::string const& server_ip, int server_port);
+        bool init(std::string const& serv_ip, int serv_port);
         bool read();
         void write();
         void close_sock();

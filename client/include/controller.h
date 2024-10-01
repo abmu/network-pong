@@ -4,11 +4,12 @@
 #include "view.h"
 #include "settings.h"
 #include <SDL2/SDL.h>
+#include <string>
 
 class Controller {
     public:
         Controller();
-        bool init();
+        bool init(std::string const& serv_ip, int serv_port);
         void run();
         void close();
     
