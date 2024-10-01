@@ -4,7 +4,7 @@
 
 int main(int argc, char* args[]) {
     if (argc != 3) {
-        std::cout << "Usage: " << args[0] << " <IP Address> <Port>" << std::endl;
+        std::cout << "Usage: " << args[0] << " <ip address> <port>" << std::endl;
         return 1;
     }
     std::string serv_ip = args[1];
