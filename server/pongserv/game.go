@@ -144,15 +144,19 @@ func (g *game) handleInit(client *client) {
 }
 
 func (g *game) handlePaddleDir(client *client, buffer []byte) {
+	if len(buffer) < 4 {
+		return
+	}
 	seqNum := binary.BigEndian.Uint16(buffer[1:3])
 	if !g.ascSeqNum(client.lastSeqNum, seqNum) {
 		return
 	}
 	client.lastSeqNum = seqNum
 	dir := dir(buffer[3])
-	if g.clients[0] == client {
+	addrStr := client.addr.String()
+	if g.clients[0].addr.String() == addrStr {
 		g.m.p1.moveDir(dir)
-	} else if g.clients[1] == client {
+	} else if g.clients[1].addr.String() == addrStr {
 		g.m.p2.moveDir(dir)
 	}
 }

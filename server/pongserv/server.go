@@ -40,6 +40,9 @@ func (s *Server) Run() {
 			log.Printf("Error reading from UDP: %v", err)
 			continue
 		}
+		if n < 1 {
+			continue
+		}
 
 		s.mutex.Lock()
 
