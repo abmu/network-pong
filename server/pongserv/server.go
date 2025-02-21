@@ -6,13 +6,15 @@ import (
 	"sync"
 )
 
+// Server represents the UDP game server that manages multiple pong games
 type Server struct {
-	conn    *net.UDPConn
-	clients map[string]*game
-	games   []*game
-	mutex   sync.Mutex
+	conn    *net.UDPConn     // UDP connection for network communication
+	clients map[string]*game // Maps client addresses to their current game
+	games   []*game          // List of all active games
+	mutex   sync.Mutex       // Mutex for thread-safe access to server state
 }
 
+// NewServer creates and initializes a new UDP server on the specified address
 func NewServer(address string) (*Server, error) {
 	addr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
@@ -31,6 +33,7 @@ func NewServer(address string) (*Server, error) {
 	}, nil
 }
 
+// Run starts the main server loop, handling incoming UDP packets
 func (s *Server) Run() {
 	defer s.conn.Close()
 	buffer := make([]byte, 1024)
@@ -49,6 +52,8 @@ func (s *Server) Run() {
 		msgBuff := buffer[:n]
 		addrStr := remoteAddr.String()
 		g, ok := s.clients[addrStr]
+
+		// Handle new client connections
 		if !ok {
 			msgType := msg(msgBuff[0])
 			if msgType == msgInit {
@@ -65,7 +70,9 @@ func (s *Server) Run() {
 	}
 }
 
+// assignGame places a client in an available game or creates a new one
 func (s *Server) assignGame(addr *net.UDPAddr) *game {
+	// Try to find an existing game with space
 	for _, g := range s.games {
 		if g.canJoin() {
 			g.addClient(addr)
@@ -73,6 +80,7 @@ func (s *Server) assignGame(addr *net.UDPAddr) *game {
 		}
 	}
 
+	// Create new game if no existing games have space
 	g := newGame(s)
 	g.addClient(addr)
 	s.games = append(s.games, g)
@@ -80,10 +88,12 @@ func (s *Server) assignGame(addr *net.UDPAddr) *game {
 	return g
 }
 
+// removeGame cleans up a game and removes all associated client mappings
 func (s *Server) removeGame(game *game) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	// Remove game from games list
 	for i, g := range s.games {
 		if g == game {
 			s.games = append(s.games[:i], s.games[i+1:]...)
@@ -91,6 +101,7 @@ func (s *Server) removeGame(game *game) {
 		}
 	}
 
+	// Remove client mappings
 	for _, client := range game.clients {
 		addrStr := client.addr.String()
 		delete(s.clients, addrStr)

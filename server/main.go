@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	// Start the UDP pong server on the specified port
 	port := 9999
 	s, err := pongserv.NewServer(fmt.Sprintf(":%v", port))
 	if err != nil {
