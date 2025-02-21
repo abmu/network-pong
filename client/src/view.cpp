@@ -4,7 +4,7 @@
 #include <cmath>
 #include <string>
 
-
+// Ball view implementation
 BallView::BallView(Ball const& ball) : ball(ball), renderer(NULL) {}
 
 void BallView::init(SDL_Renderer* const renderer) {
@@ -20,6 +20,7 @@ void BallView::close() {
     renderer = NULL;
 }
 
+// Paddle view implementation
 PaddleView::PaddleView(Paddle const& paddle) : paddle(paddle), renderer(NULL) {}
 
 void PaddleView::init(SDL_Renderer* const renderer) {
@@ -35,6 +36,7 @@ void PaddleView::close() {
     renderer = NULL;
 }
 
+// Score view implementation
 ScoreView::ScoreView(int const& score, Vec2 const& position) :
     score(score),
     view_score(-1),
@@ -61,6 +63,7 @@ void ScoreView::update() {
         cleanup();
     }
 
+    // Create and display score texture instead of surface due to faster rendering
     view_score = score;
     SDL_Surface* score_surface = TTF_RenderText_Solid(font, std::to_string(score).c_str(), {0xFF, 0xFF, 0xFF, 0xFF});
     score_texture = SDL_CreateTextureFromSurface(renderer, score_surface);
@@ -90,6 +93,7 @@ void ScoreView::close() {
     renderer = NULL;
 }
 
+// Initialize view components
 View::View(Model const& model) :
     window(NULL),
     renderer(NULL),
@@ -108,6 +112,7 @@ View::View(Model const& model) :
 {}
 
 bool View::init() {
+    // Create window and renderer
     window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
         std::cout << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
@@ -120,12 +125,14 @@ bool View::init() {
         return false;
     }
 
+    // Load game font
     font = TTF_OpenFont("assets/fonts/bit5x3.ttf", Constants::FONT_SIZE);
     if (font == NULL) {
         std::cout << "Failed to load font! TTF_Error: " << TTF_GetError() << std::endl;
         return false;
     }
 
+    // Initialize all visual components
     ball_view.init(renderer);
     paddle_one_view.init(renderer);
     paddle_two_view.init(renderer);
@@ -136,9 +143,11 @@ bool View::init() {
 }
 
 void View::render() {
+    // Clear screen with black background
     SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, 0xFF);
     SDL_RenderClear(renderer);
 
+    // Draw all game elements
     draw_net();
     ball_view.draw();
     paddle_one_view.draw();
@@ -150,6 +159,7 @@ void View::render() {
 }
 
 void View::draw_net() {
+    // Draw dotted line down center of screen
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
     for (int y = 0; y < Constants::SCREEN_HEIGHT; y++) {

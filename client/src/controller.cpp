@@ -5,6 +5,7 @@
 Controller::Controller() : running(true), paddle_dir(Direction::NONE), view(model), network(model, paddle_dir) {}
 
 bool Controller::init(std::string const& serv_ip, int serv_port) {
+    // Initialize SDL and font
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cout << "SDL could not initialise! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
@@ -23,6 +24,7 @@ void Controller::run() {
     while (running) {
         auto start_time = std::chrono::steady_clock::now();
 
+        // Check for network timeout
         bool timeout = network.read();
         if (timeout) {
             std::cout << "Connection timed out. Game ended or server down" << std::endl;
@@ -34,6 +36,7 @@ void Controller::run() {
         network.write();
         view.render();
 
+        // Calculate frame time for smooth movement
         auto stop_time = std::chrono::steady_clock::now();
         dt = std::chrono::duration<float, std::chrono::seconds::period>(stop_time - start_time).count();
         // float fps = 1000.0f / dt;
@@ -41,6 +44,7 @@ void Controller::run() {
     }
 }
 
+// Loop which detects input events 
 void Controller::handle_events() {
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0) {
@@ -54,6 +58,7 @@ void Controller::handle_events() {
     }
 }
 
+// Handles a key being pressed
 void Controller::handle_keydown(SDL_Event event) {
     if (event.key.keysym.sym == SDLK_ESCAPE) {
         running = false;
@@ -64,6 +69,7 @@ void Controller::handle_keydown(SDL_Event event) {
     }
 }
 
+// Handles a key being released
 void Controller::handle_keyup(SDL_Event event) {
     if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_UP) {
         if (paddle_dir == Direction::UP) {

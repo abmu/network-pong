@@ -21,6 +21,7 @@ Network::Network(Model& model, Direction const& paddle_dir) :
 {}
 
 bool Network::init(std::string const& serv_ip, int serv_port) {
+    // Create UDP socket
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
         std::cout << "Could not create socket" << std::endl;
@@ -32,6 +33,7 @@ bool Network::init(std::string const& serv_ip, int serv_port) {
         return false;
     }
 
+    // Set up server address
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = inet_addr(serv_ip.c_str());
     serv_addr.sin_port = htons(serv_port);
@@ -44,6 +46,7 @@ bool Network::init(std::string const& serv_ip, int serv_port) {
 }
 
 bool Network::set_sock_block(bool blocking) {
+    // Put socket into blocking mode
     int flags = fcntl(sock, F_GETFL, 0);
     if (flags == -1) {
         return false;
@@ -53,11 +56,13 @@ bool Network::set_sock_block(bool blocking) {
 }
 
 bool Network::handshake() {
+    // Attempt to connect to server
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         std::cout << "Connection to server failed" << std::endl;
         return false;
     }
 
+    // Try handshake multiple times
     int const max_attempts = 3;
     int attempt = 0; 
     for (int attempt = 0; attempt < max_attempts; attempt++) {
@@ -65,6 +70,7 @@ bool Network::handshake() {
             continue;
         }
 
+        // Set up select() for reading with timeout
         fd_set read_fds;
         FD_ZERO(&read_fds);
         FD_SET(sock, &read_fds);
@@ -73,6 +79,7 @@ bool Network::handshake() {
         timeout.tv_sec = 3;
         timeout.tv_usec = 0;
 
+        // Wait for server response
         int activity = select(sock + 1, &read_fds, nullptr, nullptr, &timeout);
         if (activity < 0) {
             std::cout << "Select failed" << std::endl;
@@ -93,6 +100,7 @@ bool Network::handshake() {
 }
 
 void Network::write() {
+    // Send paddle direction updates at specified rate
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     float time_since_send = std::chrono::duration<float, std::chrono::milliseconds::period>(now - last_send).count();
     if (time_since_send >= send_ms) {
@@ -101,6 +109,7 @@ void Network::write() {
 }
 
 bool Network::send_init() {
+    // Send initial connection message
     int buff_size = 1;
     std::byte buffer[buff_size] = {};
     buffer[0] = static_cast<std::byte>(Message::INIT);
@@ -108,6 +117,7 @@ bool Network::send_init() {
 }
 
 bool Network::send_heartbeat() {
+    // Send heartbeat to keep connection alive
     int buff_size = 1;
     std::byte buffer[buff_size] = {};
     buffer[0] = static_cast<std::byte>(Message::HEARTBEAT);
@@ -115,6 +125,7 @@ bool Network::send_heartbeat() {
 }
 
 bool Network::send_paddle_dir() {
+    // Send paddle direction update with sequence number
     seq_num++;
     int buff_size = 4;
     std::byte buffer[buff_size] = {};
@@ -135,12 +146,14 @@ bool Network::send_data(std::byte* buffer, int buff_size) {
 }
 
 bool Network::read() {
+    // Check for connection timeout
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     float time_since_recv = std::chrono::duration<float, std::chrono::milliseconds::period>(now - last_recv).count();
     if (time_since_recv >= timeout_ms) {
         return true;
     }
 
+    // Read all available messages
     while (recv_data());
     return false;
 }
@@ -165,6 +178,7 @@ void Network::parse_msg(std::byte* buffer) {
 }
 
 void Network::handle_initack(std::byte* buffer) {
+    // Handle server acknowledgment of connection
     serv_handshake = true;
     timeout_ms = ntohs(*reinterpret_cast<uint16_t*>(&buffer[1]));
     int send_rate = static_cast<int>(buffer[3]);
@@ -172,36 +186,42 @@ void Network::handle_initack(std::byte* buffer) {
 }
 
 void Network::handle_model_update(std::byte* buffer) {
+    // Check if update is newer than last received
     uint16_t game_seq_num = ntohs(*reinterpret_cast<uint16_t*>(&buffer[1]));
     if (!ascending_seq_num(last_game_seq_num, game_seq_num)) {
         return;
     }
     last_game_seq_num = game_seq_num;
 
+    // Update ball state
     float ball_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[3])));
     float ball_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[7])));
     float ball_vel_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[11])));
     float ball_vel_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[15])));
     model.ball.update(ball_x, ball_y, ball_vel_x, ball_vel_y);
 
+    // Update paddle one state
     float paddle_one_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[19])));
     float paddle_one_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[23])));
     float paddle_one_vel_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[27])));
     float paddle_one_vel_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[31])));
     model.paddle_one.update(paddle_one_x, paddle_one_y, paddle_one_vel_x, paddle_one_vel_y);
 
+    // Update paddle two state
     float paddle_two_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[35])));
     float paddle_two_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[39])));
     float paddle_two_vel_x = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[43])));
     float paddle_two_vel_y = std::bit_cast<float>(ntohl(*reinterpret_cast<uint32_t*>(&buffer[47])));
     model.paddle_two.update(paddle_two_x, paddle_two_y, paddle_two_vel_x, paddle_two_vel_y);
 
+    // Update scores
     uint16_t score_one = ntohs(*reinterpret_cast<uint16_t*>(&buffer[51]));
     uint16_t score_two = ntohs(*reinterpret_cast<uint16_t*>(&buffer[53]));
     model.update_scores(score_one, score_two);
 }
 
 bool Network::ascending_seq_num(uint16_t seq_one, uint16_t seq_two) {
+    // Handle wraparound for 16-bit sequence numbers
 	int n = 65536;
     int a = ((static_cast<int>(seq_one) - static_cast<int>(seq_two)) % n + n) % n;
     int b = ((static_cast<int>(seq_two) - static_cast<int>(seq_one)) % n + n) % n;

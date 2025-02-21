@@ -3,6 +3,7 @@
 #include <cstdint>
 
 int main(int argc, char* args[]) {
+    // Validate and parse arguments
     if (argc != 3) {
         std::cout << "Usage: " << args[0] << " <ip address> <port>" << std::endl;
         return 1;

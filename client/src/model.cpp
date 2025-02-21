@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 
+// Vec2 implementation
 Vec2::Vec2() : x(0.0f), y(0.0f) {}
 
 Vec2::Vec2(float x, float y) : x(x), y(y) {}
@@ -20,6 +21,7 @@ Vec2 Vec2::operator*(float rhs) {
     return Vec2(x * rhs, y * rhs);
 }
 
+// Ball implementation
 Ball::Ball() :
     rect{
         .x = static_cast<int>(std::round(position.x)),
@@ -30,6 +32,7 @@ Ball::Ball() :
 {}
 
 void Ball::update(float ball_x, float ball_y, float ball_vel_x, float ball_vel_y) {
+    // Scale positions and velocities by game scale factor
     position.x = ball_x * Constants::SCALE;
     position.y = ball_y * Constants::SCALE;
     rect.x = static_cast<int>(std::round(position.x));
@@ -41,6 +44,7 @@ void Ball::update(float ball_x, float ball_y, float ball_vel_x, float ball_vel_y
 void Ball::move(float dt) {
     position += velocity * dt;
     float const ymax = Constants::SCREEN_HEIGHT - rect.h;
+    // Handle ball bouncing off top and bottom walls
     if (position.y > ymax) {
         position.y = ymax - (position.y - ymax);
         velocity.y *= -1;
@@ -52,6 +56,7 @@ void Ball::move(float dt) {
     rect.y = static_cast<int>(std::round(position.y));
 }
 
+// Paddle implementation
 Paddle::Paddle() :
     rect{
         .x = static_cast<int>(std::round(position.x)),
@@ -62,6 +67,7 @@ Paddle::Paddle() :
 {}
 
 void Paddle::update(float paddle_x, float paddle_y, float paddle_vel_x, float paddle_vel_y) {
+    // Scale positions and velocities by game scale factor
     position.x = paddle_x * Constants::SCALE;
     position.y = paddle_y * Constants::SCALE;
     rect.x = static_cast<int>(std::round(position.x));
@@ -72,6 +78,7 @@ void Paddle::update(float paddle_x, float paddle_y, float paddle_vel_x, float pa
 
 void Paddle::move(float dt) {
     position += velocity * dt;
+    // Handle paddle moving off screen
     if (position.y < 0) {
         position.y = 0;
     } else if (position.y > Constants::SCREEN_HEIGHT - rect.h) {
@@ -81,6 +88,7 @@ void Paddle::move(float dt) {
     rect.y = static_cast<int>(std::round(position.y));
 }
 
+// Main model implementation
 Model::Model() :
     ball{},
     paddle_one{},
