@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+// Handles ball display
 class BallView {
     public:
         BallView(Ball const& ball);
@@ -15,6 +16,7 @@ class BallView {
         SDL_Renderer* renderer;
 };
 
+// Handles paddle display
 class PaddleView {
     public:
         PaddleView(Paddle const& paddle);
@@ -27,6 +29,7 @@ class PaddleView {
         SDL_Renderer* renderer;
 };
 
+// Handles score display
 class ScoreView {
     public:
         ScoreView(int const& score, Vec2 const& position);
@@ -46,6 +49,7 @@ class ScoreView {
         void cleanup();
 };
 
+// Main view class that manages all visual components
 class View {
     public:
         View(Model const& model);

@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <string>
 
+// Main controller class that handles game loop and input
 class Controller {
     public:
         Controller();

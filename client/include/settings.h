@@ -1,5 +1,6 @@
 #pragma once
 
+// Game constants scaled by SCALE factor
 namespace Constants {
     inline constexpr float SCALE = 2.4f;
     inline constexpr int SCREEN_WIDTH = static_cast<int>(400 * SCALE);
@@ -12,6 +13,7 @@ namespace Constants {
     inline constexpr int NET_SPACING = static_cast<int>(10 * SCALE);
 }
 
+// Movement directions for paddles
 enum class Direction {
     NONE = 1,
     UP = 2,

@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
+// Network message types
 enum class Message {
     INIT = 1,
     INITACK = 2,
@@ -16,6 +17,7 @@ enum class Message {
     MODEL_UPDATE = 5
 };
 
+// Handles network communication with game server
 class Network{
     public:
         Network(Model& model, Direction const& paddle_dir);

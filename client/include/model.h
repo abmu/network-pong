@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <chrono>
 
+// 2D vector class for position and velocity
 class Vec2{
     public:        
         Vec2();
@@ -13,6 +14,7 @@ class Vec2{
         float x, y;
 };
 
+// Represents a paddle in the game
 class Paddle{
     public:
         Paddle();
@@ -25,6 +27,7 @@ class Paddle{
         Vec2 velocity;
 };
 
+// Represents the ball in the game
 class Ball{
     public:
         Ball();
@@ -37,6 +40,7 @@ class Ball{
         Vec2 velocity;
 };
 
+// Main game model that tracks game state
 class Model{
     public:
         Model();
