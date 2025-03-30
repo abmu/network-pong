@@ -2,6 +2,8 @@
 
 A network pong game with a GO server and C++ clients, communicating over UDP.
 
+[network-pong.webm](https://github.com/user-attachments/assets/6703d90c-2f73-4227-8c50-7377ae8501f7)
+
 ## Server setup
 
 Before you begin, ensure that you have GO installed.
